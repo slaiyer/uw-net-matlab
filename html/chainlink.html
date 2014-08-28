@@ -1,0 +1,204 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>CHAINLINK</title><meta name="generator" content="MATLAB 8.3"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2014-08-28"><meta name="DC.source" content="chainlink.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>CHAINLINK</h1><!--introduction--><p>Calculates the volume and separations for the given node configuration.</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Signature</a></li><li><a href="#5">Preparing the output vector for vectorized input</a></li><li><a href="#6">Iterating over each individual in the vectorized input</a></li><li><a href="#9">Calculating the volume of the point cloud polyhedron</a></li><li><a href="#10">Checking for constraint violation</a></li><li><a href="#14">Defining the penalty for edge coverage gap</a></li><li><a href="#23">Return the score vector of the input individuals</a></li></ul></div><h2>Signature<a name="1"></a></h2><pre class="codeinput"><span class="keyword">function</span> volume = chainlink(N, R, NUM)
+</pre><p>Objective: Maximize volume of polyhedron defined by a set of coordinates <i>N</i>(<i>r</i>, :), subject to edge coverage constraints.</p><p>Input: Vectorized array of individuals <i>N</i>(<i>INDIVS</i>, 3 * <i>NUM</i>), such that <i>N</i>(<i>r</i>, :) = [ <i>Cx1</i> <i>Cy1</i> <i>Cz1</i> ... <i>Cx&lt;NUM&gt;</i> <i>Cy&lt;NUM&gt;</i> <i>Cz&lt;NUM&gt;</i> ], vector of base coverage radii of nodes <i>R</i>, number of nodes <i>N</i></p><p>Output: Column vector <i>volume</i> of individual scores</p><pre class="codeinput"><span class="comment">% TODO: Implement anisotropic attenuation</span>
+</pre><h2>Preparing the output vector for vectorized input<a name="5"></a></h2><pre class="codeinput">    INDIVS = size(N, 1);        <span class="comment">% Number of incoming individuals</span>
+    volume = zeros(INDIVS, 1);  <span class="comment">% Column vector for vectorized scores</span>
+</pre><h2>Iterating over each individual in the vectorized input<a name="6"></a></h2><pre class="codeinput">    <span class="keyword">for</span> i = 1 : INDIVS
+</pre><pre class="codeinput">        inferior = false;   <span class="comment">% Flag for current individual's status</span>
+</pre><p>Reformat each individual into a convenient 2D matrix Reshape <i>N</i>(1, :) as <i>N2</i>(<i>NUM</i>, 3), such that row vector <i>N2</i>(<i>r</i>, :) = [ <i>Cx</i> <i>Cy</i> <i>Cz</i> ]</p><pre class="codeinput">        <span class="comment">% Workaround for MATLAB's column-major matrix policy</span>
+        N2 = reshape(N(i,:), 3, NUM)';
+</pre><h2>Calculating the volume of the point cloud polyhedron<a name="9"></a></h2><p>Use Delaunay triangulation to create a tetrahedral mesh, and find the facets and volume of the convex hull over it:</p><pre class="codeinput">        <span class="comment">% TODO: Investigate concave polyhedron volume calculation algorithms</span>
+        DT = delaunayTriangulation(N2);
+        [ facets, volume(i) ] = convexHull(DT);
+</pre><h2>Checking for constraint violation<a name="10"></a></h2><p>Ensure that there are no gaps in coverage on any edge of any facet. Edge coverage is considered to be complete if the coverage ranges of both nodes at the involved adjacent vertices overlap or at least meet at some point on their common edge.</p><pre class="codeinput">        <span class="comment">% Enumerate and iterate over each adjacent vertex pair of each facet:</span>
+        numFacets = size(facets, 1);
+        numVerts = size(facets, 2);
+
+        <span class="keyword">for</span> f = 1 : numFacets
+</pre><pre class="codeinput">            <span class="keyword">for</span> v1 = 1 : numVerts
+</pre><pre class="codeinput">                v2 = rem(v1, numVerts) + 1;     <span class="comment">% Round robin pair traversal</span>
+                p1 = facets(f,v1);
+                p2 = facets(f,v2);
+</pre><p>Calculate the separation between two adjacent vertices and the total coverage along their common edge:</p><pre class="codeinput">                edge = norm(N2(p1,:) - N2(p2,:));
+                edgeCover = R(p1) + R(p2);
+</pre><h2>Defining the penalty for edge coverage gap<a name="14"></a></h2><p><i>volume</i>(<i>i</i>) = <i>volume</i>(<i>i</i>) + <i>edge</i> - <i>edgeCover</i> is insufficient because as the volume increases cubically, it easily offsets the linear increase in penalty. Hence, reset the score to zero as soon as the first edge gap is found, and escape from the inferior individual's loop.</p><pre class="codeinput">                <span class="keyword">if</span> edgeCover &lt; edge
+</pre><pre class="codeinput">                    <span class="comment">% TODO: Alternatives to zero-tolerance scheme for gaps</span>
+                    volume(i) = 0;
+</pre><p>Escape inferior individual's loop <i>(1/3)</i></p><pre class="codeinput">                    inferior = true;
+                    <span class="keyword">break</span>
+</pre><pre class="codeinput">                <span class="keyword">end</span>
+</pre><pre class="codeinput">            <span class="keyword">end</span>
+</pre><p>Escape inferior individual's loop <i>(2/3)</i></p><pre class="codeinput">            <span class="keyword">if</span> inferior == true
+                <span class="keyword">break</span>
+            <span class="keyword">end</span>
+</pre><pre class="codeinput">        <span class="keyword">end</span>
+</pre><p>Escape inferior individual's loop <i>(3/3)</i></p><pre class="codeinput">        <span class="keyword">if</span> inferior == true
+            <span class="keyword">continue</span>
+        <span class="keyword">end</span>
+</pre><pre class="codeinput">    <span class="keyword">end</span>
+</pre><h2>Return the score vector of the input individuals<a name="23"></a></h2><pre class="codeinput"><span class="keyword">end</span>
+</pre><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2014a</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% CHAINLINK
+% Calculates the volume and separations for the given node configuration.
+
+%% Signature
+function volume = chainlink(N, R, NUM)
+%%
+% Objective: Maximize volume of polyhedron defined by
+% a set of coordinates _N_(_r_, :), subject to edge coverage constraints.
+%%
+% Input: Vectorized array of individuals _N_(_INDIVS_, 3 * _NUM_),
+% such that _N_(_r_, :) = [ _Cx1_ _Cy1_ _Cz1_ ... _Cx<NUM>_ _Cy<NUM>_ _Cz<NUM>_ ],
+% vector of base coverage radii of nodes _R_, number of nodes _N_
+%%
+% Output: Column vector _volume_ of individual scores
+
+% TODO: Implement anisotropic attenuation
+
+    %% Preparing the output vector for vectorized input
+    INDIVS = size(N, 1);        % Number of incoming individuals
+    volume = zeros(INDIVS, 1);  % Column vector for vectorized scores
+
+    %% Iterating over each individual in the vectorized input
+    for i = 1 : INDIVS
+        inferior = false;   % Flag for current individual's status
+
+        %%
+        % Reformat each individual into a convenient 2D matrix
+        % Reshape _N_(1, :) as _N2_(_NUM_, 3),
+        % such that row vector _N2_(_r_, :) = [ _Cx_ _Cy_ _Cz_ ]
+
+        % Workaround for MATLAB's column-major matrix policy
+        N2 = reshape(N(i,:), 3, NUM)';
+
+        %% Calculating the volume of the point cloud polyhedron
+        % Use Delaunay triangulation to create a tetrahedral mesh,
+        % and find the facets and volume of the convex hull over it:
+
+        % TODO: Investigate concave polyhedron volume calculation algorithms
+        DT = delaunayTriangulation(N2);
+        [ facets, volume(i) ] = convexHull(DT);
+
+        %% Checking for constraint violation
+        % Ensure that there are no gaps in coverage on any edge of any facet.
+        % Edge coverage is considered to be complete if the coverage ranges of
+        % both nodes at the involved adjacent vertices overlap or at least meet
+        % at some point on their common edge.
+
+        % Enumerate and iterate over each adjacent vertex pair of each facet:
+        numFacets = size(facets, 1);
+        numVerts = size(facets, 2);
+
+        for f = 1 : numFacets
+            for v1 = 1 : numVerts
+                v2 = rem(v1, numVerts) + 1;     % Round robin pair traversal
+                p1 = facets(f,v1);
+                p2 = facets(f,v2);
+
+                %%
+                % Calculate the separation between two adjacent vertices
+                % and the total coverage along their common edge:
+                edge = norm(N2(p1,:) - N2(p2,:));
+                edgeCover = R(p1) + R(p2);
+
+                %% Defining the penalty for edge coverage gap
+                % _volume_(_i_) = _volume_(_i_) + _edge_ - _edgeCover_ is insufficient
+                % because as the volume increases cubically,
+                % it easily offsets the linear increase in penalty.
+                % Hence, reset the score to zero as soon as the first edge gap is found,
+                % and escape from the inferior individual's loop.
+                if edgeCover < edge
+                    % TODO: Alternatives to zero-tolerance scheme for gaps
+                    volume(i) = 0;
+                    %%
+                    % Escape inferior individual's loop _(1/3)_
+                    inferior = true;
+                    break
+                end
+            end
+            %%
+            % Escape inferior individual's loop _(2/3)_
+            if inferior == true
+                break
+            end
+        end
+        %%
+        % Escape inferior individual's loop _(3/3)_
+        if inferior == true
+            continue
+        end
+    end
+
+%% Return the score vector of the input individuals
+end
+
+##### SOURCE END #####
+--></body></html>
