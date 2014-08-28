@@ -1,5 +1,5 @@
 %% CHAINLINK
-% Calculates the volume and separations for given node configuration.
+% Calculates the volume and separations for the given node configuration.
 
 %% Signature
 function volume = chainlink(N, R)
@@ -36,7 +36,7 @@ function volume = chainlink(N, R)
         DT = delaunayTriangulation(N2);
         [facets, volume(i)] = convexHull(DT);
 
-        %% Constraint checking
+        %% Checking for constraint violation
         % Ensure that there are no gaps in coverage on any edge of any facet.
         % Edge coverage is considered to be complete if the coverage ranges of
         % both nodes at the involved adjacent vertices overlap or at least meet
