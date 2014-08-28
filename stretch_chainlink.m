@@ -28,10 +28,10 @@ function N = stretch_chainlink()
     HALFRANGE = min(R) / (2 * sqrt(3));     % Center roughly around origin
 
     %% Genetic algorithm options
-    % _TolFun_ sets stopping criterion based on average change of
-    % fitness function value over _StallGen_ generations to the specified value.
+    % _'PopInitRange'_ sets the initial population seeding range,
+    % within which the first generation is defined using _'CreationFcn'_.
     %%
-    % _Vectorized_ specifies if the the GA is to be run with
+    % _'Vectorized'_ specifies if the the GA is to be run with
     % multiple individuals passed to it for evaluation at once or not.
 
     % TODO: Set options optimally
@@ -39,7 +39,6 @@ function N = stretch_chainlink()
     newopts = ...
         struct( ...
             'PopInitRange', [ -HALFRANGE; HALFRANGE ], ...  % Default: [ -10; 10 ]
-            'TolFun',       1e-6, ...                  % Default: 1e-6
             'PlotFcns',     { @gaplotbestf }, ...   % Default: []
             'Display',      'iter', ...             % 'iter', default: 'final'
             'Vectorized',   'on' ...                % Default: 'off'
