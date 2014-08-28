@@ -3,16 +3,29 @@
 
 %% Signature
 function N = stretch_chainlink()
-% TODO: Implement anisotropic attenuation
+%%
+% Output: Optimized node configuration _N_(_NUM_, 3),
+% such that row vector _N2_(_r_, :) = [ _Cx_ _Cy_ _Cz_ ]
+
 % TODO: Input: Vector of base coverage radii of nodes R
 
-    %% Initializing global variables
+    %% Initializing helper variables
     % Hardcoded values for testing and debugging:
 
-    % R = [94 62 93 16]             % Random radii for 4 nodes
-    R = [13 25 18 42 25 32 24 24]   % Random radii for 8 nodes
+    % R = [ 94 62 93 16 ]
+    % R = [ 13 25 18 42 25 32 24 24 ]
+    R = [ 3686 5526 4895 3450 5278 3184 3475 3967 5557 5279 4281 4853 ...
+          3645 3921 3877 5598 4453 3664 5915 3775 4401 3556 5327 4905 3759 ]
 
-    NUM = size(R, 2)                % Number of nodes
+    NUM = size(R, 2)    % Number of nodes
+
+    %%
+    % Set initial population seeding range.
+    % min(R) / sqrt(3) is a conservative setting, ensuring that the
+    % cubic diagonal of initial population range will fit in the
+    % lowest coverage radius of all nodes.
+
+    HALFRANGE = min(R) / (2 * sqrt(3));     % Center roughly around origin
 
     %% Genetic algorithm options
     % _TolFun_ sets stopping criterion based on average change of
@@ -25,7 +38,8 @@ function N = stretch_chainlink()
     oldopts = gaoptimset(@ga);      % Load default options explicitly
     newopts = ...
         struct( ...
-            'TolFun',       1e-6, ...               % Default: 1e-6
+            'PopInitRange', [ -HALFRANGE; HALFRANGE ], ...  % Default: [ -10; 10 ]
+            'TolFun',       1e-6, ...                  % Default: 1e-6
             'PlotFcns',     { @gaplotbestf }, ...   % Default: []
             'Display',      'iter', ...             % 'iter', default: 'final'
             'Vectorized',   'on' ...                % Default: 'off'
@@ -35,10 +49,10 @@ function N = stretch_chainlink()
     %% Invoking the genetic algorithm
     % Maximize _CHAINLINK_ by minimizing its negative score:
     tic    % Start timer
-    objFunc = @(N) -chainlink(N, R);    % Create function handle for GA
+    objFunc = @(N) -chainlink(N, R, NUM);       % Create function handle for GA
     %%
     % Dump GA output: [ _x_, _fval_, _exitFlag_, _output_, _population_, _scores_ ]
-    [N, volume, ~, output, ~, ~] = ga(objFunc, 3 * NUM, options)
+    [ N, volume, ~, output, ~, ~ ] = ga(objFunc, 3 * NUM, options)
     toc    % Poll timer
 
     %%

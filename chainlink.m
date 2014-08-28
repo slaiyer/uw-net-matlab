@@ -2,18 +2,21 @@
 % Calculates the volume and separations for the given node configuration.
 
 %% Signature
-function volume = chainlink(N, R)
+function volume = chainlink(N, R, NUM)
 %%
 % Objective: Maximize volume of polyhedron defined by
 % a set of coordinates _N_(_r_, :), subject to edge coverage constraints.
 %%
 % Input: Vectorized array of individuals _N_(_INDIVS_, 3 * _NUM_),
 % such that _N_(_r_, :) = [ _Cx1_ _Cy1_ _Cz1_ ... _Cx<NUM>_ _Cy<NUM>_ _Cz<NUM>_ ],
-% vector of base coverage radii of nodes _R_
+% vector of base coverage radii of nodes _R_, number of nodes _N_
+%%
+% Output: Column vector _volume_ of individual scores
+
+% TODO: Implement anisotropic attenuation
 
     %% Preparing the output vector for vectorized input
     INDIVS = size(N, 1);        % Number of incoming individuals
-    NUM = size(N, 2) / 3;       % Number of nodes
     volume = zeros(INDIVS, 1);  % Column vector for vectorized scores
 
     %% Iterating over each individual in the vectorized input
@@ -21,8 +24,8 @@ function volume = chainlink(N, R)
         inferior = false;   % Flag for current individual's status
 
         %%
-        % Reformatting each individual into a convenient 2D matrix
-        % Reshape _N_(_m_, :) as _N2_(_NUM_, 3),
+        % Reformat each individual into a convenient 2D matrix
+        % Reshape _N_(1, :) as _N2_(_NUM_, 3),
         % such that row vector _N2_(_r_, :) = [ _Cx_ _Cy_ _Cz_ ]
 
         % Workaround for MATLAB's column-major matrix policy
@@ -34,7 +37,7 @@ function volume = chainlink(N, R)
 
         % TODO: Investigate concave polyhedron volume calculation algorithms
         DT = delaunayTriangulation(N2);
-        [facets, volume(i)] = convexHull(DT);
+        [ facets, volume(i) ] = convexHull(DT);
 
         %% Checking for constraint violation
         % Ensure that there are no gaps in coverage on any edge of any facet.
