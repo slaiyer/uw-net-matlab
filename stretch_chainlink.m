@@ -5,11 +5,11 @@
 function N = stretch_chainlink()
 %%
 % Output: Optimized node configuration _N_(_NUM_, 3),
-% such that row vector _N2_(_r_, :) = [ _Cx_ _Cy_ _Cz_ ]
+% such that row vector _N_(_r_, :) = [ _Cx_ _Cy_ _Cz_ ]
 
-% TODO: Input: Vector of base coverage radii of nodes R
+% TODO: Input: Vector of base node coverage radii R
 
-    %% Initializing helper variables
+    %% Initializing constant data
     % Hardcoded values for testing and debugging:
 
     % R = [ 94 62 93 16 ]
@@ -20,9 +20,10 @@ function N = stretch_chainlink()
     NUM = size(R, 2)    % Number of nodes
 
     %%
-    % Set initial population seeding range.
+    % Set the initial population seeding range.
+    %%
     % min(R) / sqrt(3) is a conservative setting, ensuring that the
-    % cubic diagonal of initial population range will fit in the
+    % cubic diagonal of the initial population range will fit in the
     % lowest coverage radius of all nodes.
 
     HALFRANGE = min(R) / (2 * sqrt(3));     % Center roughly around origin
@@ -31,8 +32,8 @@ function N = stretch_chainlink()
     % _'PopInitRange'_ sets the initial population seeding range,
     % within which the first generation is defined using _'CreationFcn'_.
     %%
-    % _'Vectorized'_ specifies if the the GA is to be run with
-    % multiple individuals passed to it for evaluation at once or not.
+    % _'Vectorized'_ specifies whether the GA is to be called with
+    % multiple individuals passed to it in each iteration or not.
 
     % TODO: Set options optimally
     oldopts = gaoptimset(@ga);      % Load default options explicitly
@@ -46,31 +47,39 @@ function N = stretch_chainlink()
     options = gaoptimset(oldopts, newopts);     % Overwrite selected parameters
 
     %% Invoking the genetic algorithm
-    % Maximize _CHAINLINK_ by minimizing its negative score:
+    % Maximize _CHAINLINK_ by minimizing the negative of its score:
     tic    % Start timer
     objFunc = @(N) -chainlink(N, R, NUM);       % Create function handle for GA
-    %%
-    % Dump GA output: [ _x_, _fval_, _exitFlag_, _output_, _population_, _scores_ ]
+    % Dump GA return values [ x, fval, exitFlag, output, population, scores ]:
     [ N, volume, ~, output, ~, ~ ] = ga(objFunc, 3 * NUM, options)
     toc    % Poll timer
 
     %%
-    % Calculate map separation between each pair of nodes.
+    % Calculate and map the separation between each pair of nodes.
     % Reshape _N_(1, 3 * _NUM_) as _N_(_NUM_, 3),
     % such that row vector _N_(_r_, :) = [ _Cx_ _Cy_ _Cz_ ]
 
-    % Workaround for MATLAB's column-major matrix policy
+    % Workaround for MATLAB's column-major matrix policy:
 	N = reshape(N, 3, NUM)';
 
     sep = zeros(NUM, NUM);
 
     for i = 1 : NUM - 1
         for j = i + 1 : NUM
-            sep(j,i) = norm(N(i,:) - N(j,:));
+            sep(i,j) = norm(N(i,:) - N(j,:));
         end
     end
 
-    sep
+    labels = cell(1, NUM);  % Row and column headers
+
+    for i = 1 : NUM
+        labels{i} = strcat('Node', num2str(i));
+    end
+
+    %%
+    % Display the Euclidean distances between each pair of nodes
+    % in a tabular format:
+    sep = array2table(sep', 'VariableNames', labels, 'RowNames', labels)
 
 %% Return volume optimized configuration for the given number of nodes
 end

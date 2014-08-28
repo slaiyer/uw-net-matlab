@@ -9,7 +9,7 @@ function volume = chainlink(N, R, NUM)
 %%
 % Input: Vectorized array of individuals _N_(_INDIVS_, 3 * _NUM_),
 % such that _N_(_r_, :) = [ _Cx1_ _Cy1_ _Cz1_ ... _Cx<NUM>_ _Cy<NUM>_ _Cz<NUM>_ ],
-% vector of base coverage radii of nodes _R_, number of nodes _N_
+% vector of base node coverage radii _R_, number of nodes _N_
 %%
 % Output: Column vector _volume_ of individual scores
 
