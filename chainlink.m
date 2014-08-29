@@ -9,9 +9,9 @@ function volume = chainlink(N, R, NUM)
 %%
 % Input: Vectorized array of individuals _N_(_INDIVS_, 3 * _NUM_),
 % such that _N_(_r_, :) = [ _Cx1_ _Cy1_ _Cz1_ ... _Cx<NUM>_ _Cy<NUM>_ _Cz<NUM>_ ],
-% vector of base node coverage radii _R_, number of nodes _N_
+% vector of base node coverage radii _R_, number of nodes _N_.
 %%
-% Output: Column vector _volume_ of individual scores
+% Output: Column vector _volume_ of individual scores.
 
 % TODO: Implement anisotropic attenuation
 
@@ -33,7 +33,7 @@ function volume = chainlink(N, R, NUM)
 
         %% Calculating the volume of the point cloud polyhedron
         % Use Delaunay triangulation to create a tetrahedral mesh,
-        % and find the facets and volume of the convex hull over it:
+        % and find the facets and volume of the convex hull over it.
 
         % TODO: Investigate concave polyhedron volume calculation algorithms
         DT = delaunayTriangulation(N2);
@@ -68,27 +68,28 @@ function volume = chainlink(N, R, NUM)
                 % Hence, reset the score to zero as soon as
                 % the first edge gap is found, and
                 % escape from the inferior individual's loop.
+
                 if edgeCover < edge
                     % TODO: Alternatives to zero-tolerance scheme for gaps
                     volume(i) = 0;
                     %%
-                    % Escape inferior individual's loop _(1/3)_
+                    % Escape inferior individual's loop _(1/3)_:
                     inferior = true;
                     break
                 end
             end
             %%
-            % Escape inferior individual's loop _(2/3)_
+            % Escape inferior individual's loop _(2/3)_:
             if inferior == true
                 break
             end
         end
         %%
-        % Escape inferior individual's loop _(3/3)_
+        % Escape inferior individual's loop _(3/3)_:
         if inferior == true
             continue
         end
     end
 
-%% Return the score vector of the input individuals
+%% Returning the score vector for the input individuals
 end

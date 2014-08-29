@@ -2,25 +2,17 @@
 % Uses a vectorized genetic algorithm to optimize _CHAINLINK_.
 
 %% Function signature
-function N = stretch_chainlink()
+function [ N, V ] = stretch_chainlink(R, NUM, verbose)
+%%
+% Input: Vector of base node coverage radii _R_, number of nodes _N_,
+% boolean flag _verbose_ to specify output verbosity.
 %%
 % Output: Optimized node configuration _N_(_NUM_, 3),
-% such that row vector _N_(_r_, :) = [ _Cx_ _Cy_ _Cz_ ]
-
-% TODO: Input: Vector of base node coverage radii R
+% such that row vector _N_(_r_, :) = [ _Cx_ _Cy_ _Cz_ ],
+% polyhedral volume _V_ enclosed by _N_.
 
     %% Initializing constant data
-    % Hardcoded values for testing and debugging:
-
-    % R = [ 94 62 93 16 ]
-    % R = [ 13 25 18 42 25 32 24 24 ]
-    R = [ 3686 5526 4895 3450 5278 3184 3475 3967 5557 5279 4281 4853 ...
-          3645 3921 3877 5598 4453 3664 5915 3775 4401 3556 5327 4905 3759 ]
-
-    NUM = size(R, 2)	% Number of nodes
-
-    %%
-    % Set the initial population seeding range.
+	% Set the initial population seeding range.
     %%
     % min(R) / sqrt(3) is a conservative setting, ensuring that the
     % cubic diagonal of the initial population range will fit in the
@@ -28,7 +20,7 @@ function N = stretch_chainlink()
 
     HALFRANGE = min(R) / (2 * sqrt(3));     % Center roughly around origin
 
-    %% Genetic algorithm options
+    %% Setting the genetic algorithm options
     % _'PopInitRange'_ sets the initial population seeding range,
     % within which the first generation is defined using _'CreationFcn'_.
     %%
@@ -41,20 +33,32 @@ function N = stretch_chainlink()
         struct( ...
             'PopInitRange', [ -HALFRANGE; HALFRANGE ], ...  % { [ -10; 10 ] }
             'PlotFcns',     { @gaplotbestf }, ...           % { [] }
-            'Display',      'iter', ...                     % { 'final' }
             'Vectorized',   'on' ...                        % { 'off' }
               );
     options = gaoptimset(oldopts, newopts);     % Overwrite selected parameters
 
+    if verbose == true
+        options = gaoptimset(oldopts, 'Display', 'iter');
+    else
+        options = gaoptimset(oldopts, 'Display', 'final');
+    end
+
     %% Invoking the genetic algorithm
     % Maximize _CHAINLINK_ by minimizing the negative of its score:
-    tic    % Start timer
     objFunc = @(N) -chainlink(N, R, NUM);	% Create function handle for GA
+
+    tic    % Start timer
+
     % Dump GA return values [ x, fval, exitFlag, output, population, scores ]:
-    [ N, volume, ~, output, ~, ~ ] = ga(objFunc, 3 * NUM, options)
+    if verbose == true
+        [ N, fval, ~, output, ~, ~ ] = ga(objFunc, 3 * NUM, options)
+    else
+        [ N, fval, ~, ~, ~, ~ ] = ga(objFunc, 3 * NUM, options);
+    end
+
     toc    % Poll timer
 
-    %%
+    %% Processing the genetic algrithm output
     % Reshape _N_(1, 3 * _NUM_) as _N_(_NUM_, 3),
     % such that row vector _N_(_r_, :) = [ _Cx_ _Cy_ _Cz_ ]
 
@@ -62,7 +66,13 @@ function N = stretch_chainlink()
 	N = reshape(N, 3, NUM)';
 
     %%
+    % Return the negative of _fval_ as the positive volume of the polyhedron
+    % enclosed by _N_:
+    V = -fval;
+
+    %%
     % Calculate and map the separation between each pair of nodes.
+
     sep = zeros(NUM, NUM);
 
     for i = 1 : NUM - 1
@@ -79,17 +89,21 @@ function N = stretch_chainlink()
 
     %%
     % Display the Euclidean distances between each pair of nodes
-    % in a tabular format:
-    sep = array2table(sep', 'VariableNames', labels, 'RowNames', labels)
+    % in a tabular format.
+
+    if verbose == true
+        sep = array2table(sep', 'VariableNames', labels, 'RowNames', labels)
+    else
+        sep = array2table(sep', 'VariableNames', labels, 'RowNames', labels);
+    end
 
     %% Displaying the 3D representation of the solution
-    figure( ...
-           'Name', 'Node configuration optimized for coverage volume', ...
-           'NumberTitle', 'off' ...
-          );
+    title = [ 'Node configuration optimized for coverage volume', ...
+              ', NUM: ', num2str(NUM) ];
+    figure('Name', title, 'NumberTitle', 'on');
 
     %%
-    % Show the scatter plot of the optimized node configuration.
+    % Show the scatter plot of the optimized node configuration:
     scatter3(N(:,1), N(:,2), N(:,3), '.');
 
     % Node coverage envelope colours
@@ -98,6 +112,7 @@ function N = stretch_chainlink()
 
     %%
     % Display translucent spheres depicting the coverage volume of each node.
+
     for i = 1 : NUM
         r = R(i);
         [ x, y, z ] = sphere(16);
@@ -117,10 +132,11 @@ function N = stretch_chainlink()
     %%
     % Use Delaunay triangulation to create and display the tetrahedral mesh
     % for the polyhedral volume enclosed by the node configuration.
+
     hold on;	% Continue with current figure
 
     DT = delaunayTriangulation(N);
     tetramesh(DT);
 
-%% Return volume optimized configuration for the given number of nodes
+%% Returning a volume-optimized configuration for the given number of nodes
 end
