@@ -21,3 +21,9 @@
 **Output:**
 
 * _inCSV_-optim.csv
+
+**Example:**
+```
+#!matlab
+optim_node_config('test_radii.csv', 4, true)
+```
