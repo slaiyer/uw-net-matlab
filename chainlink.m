@@ -1,7 +1,7 @@
 %% CHAINLINK
 % Calculates the volume and separations for the given node configuration.
 
-%% Signature
+%% Function signature
 function volume = chainlink(N, R, NUM)
 %%
 % Objective: Maximize volume of polyhedron defined by
@@ -17,11 +17,11 @@ function volume = chainlink(N, R, NUM)
 
     %% Preparing the output vector for vectorized input
     INDIVS = size(N, 1);        % Number of incoming individuals
-    volume = zeros(INDIVS, 1);  % Column vector for vectorized scores
+    volume = zeros(INDIVS, 1);	% Column vector for vectorized scores
 
     %% Iterating over each individual in the vectorized input
     for i = 1 : INDIVS
-        inferior = false;   % Flag for current individual's status
+        inferior = false;	% Flag for current individual's status
 
         %%
         % Reformat each individual into a convenient 2D matrix
@@ -62,11 +62,12 @@ function volume = chainlink(N, R, NUM)
                 edgeCover = R(p1) + R(p2);
 
                 %% Defining the penalty for edge coverage gap
-                % _volume_(_i_) = _volume_(_i_) + _edge_ - _edgeCover_ is insufficient
-                % because as the volume increases cubically,
+                % _volume_(_i_) = _volume_(_i_) + _edge_ - _edgeCover_
+                % is insufficient because as the volume increases cubically,
                 % it easily offsets the linear increase in penalty.
-                % Hence, reset the score to zero as soon as the first edge gap is found,
-                % and escape from the inferior individual's loop.
+                % Hence, reset the score to zero as soon as
+                % the first edge gap is found, and
+                % escape from the inferior individual's loop.
                 if edgeCover < edge
                     % TODO: Alternatives to zero-tolerance scheme for gaps
                     volume(i) = 0;

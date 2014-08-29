@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>CHAINLINK</title><meta name="generator" content="MATLAB 8.3"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2014-08-28"><meta name="DC.source" content="chainlink.m"><style type="text/css">
+      --><title>CHAINLINK</title><meta name="generator" content="MATLAB 8.3"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2014-08-29"><meta name="DC.source" content="chainlink.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -66,12 +66,12 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style></head><body><div class="content"><h1>CHAINLINK</h1><!--introduction--><p>Calculates the volume and separations for the given node configuration.</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Signature</a></li><li><a href="#5">Preparing the output vector for vectorized input</a></li><li><a href="#6">Iterating over each individual in the vectorized input</a></li><li><a href="#9">Calculating the volume of the point cloud polyhedron</a></li><li><a href="#10">Checking for constraint violation</a></li><li><a href="#14">Defining the penalty for edge coverage gap</a></li><li><a href="#23">Return the score vector of the input individuals</a></li></ul></div><h2>Signature<a name="1"></a></h2><pre class="codeinput"><span class="keyword">function</span> volume = chainlink(N, R, NUM)
-</pre><p>Objective: Maximize volume of polyhedron defined by a set of coordinates <i>N</i>(<i>r</i>, :), subject to edge coverage constraints.</p><p>Input: Vectorized array of individuals <i>N</i>(<i>INDIVS</i>, 3 * <i>NUM</i>), such that <i>N</i>(<i>r</i>, :) = [ <i>Cx1</i> <i>Cy1</i> <i>Cz1</i> ... <i>Cx&lt;NUM&gt;</i> <i>Cy&lt;NUM&gt;</i> <i>Cz&lt;NUM&gt;</i> ], vector of base coverage radii of nodes <i>R</i>, number of nodes <i>N</i></p><p>Output: Column vector <i>volume</i> of individual scores</p><pre class="codeinput"><span class="comment">% TODO: Implement anisotropic attenuation</span>
+  </style></head><body><div class="content"><h1>CHAINLINK</h1><!--introduction--><p>Calculates the volume and separations for the given node configuration.</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Function signature</a></li><li><a href="#5">Preparing the output vector for vectorized input</a></li><li><a href="#6">Iterating over each individual in the vectorized input</a></li><li><a href="#9">Calculating the volume of the point cloud polyhedron</a></li><li><a href="#10">Checking for constraint violation</a></li><li><a href="#14">Defining the penalty for edge coverage gap</a></li><li><a href="#23">Return the score vector of the input individuals</a></li></ul></div><h2>Function signature<a name="1"></a></h2><pre class="codeinput"><span class="keyword">function</span> volume = chainlink(N, R, NUM)
+</pre><p>Objective: Maximize volume of polyhedron defined by a set of coordinates <i>N</i>(<i>r</i>, :), subject to edge coverage constraints.</p><p>Input: Vectorized array of individuals <i>N</i>(<i>INDIVS</i>, 3 * <i>NUM</i>), such that <i>N</i>(<i>r</i>, :) = [ <i>Cx1</i> <i>Cy1</i> <i>Cz1</i> ... <i>Cx&lt;NUM&gt;</i> <i>Cy&lt;NUM&gt;</i> <i>Cz&lt;NUM&gt;</i> ], vector of base node coverage radii <i>R</i>, number of nodes <i>N</i></p><p>Output: Column vector <i>volume</i> of individual scores</p><pre class="codeinput"><span class="comment">% TODO: Implement anisotropic attenuation</span>
 </pre><h2>Preparing the output vector for vectorized input<a name="5"></a></h2><pre class="codeinput">    INDIVS = size(N, 1);        <span class="comment">% Number of incoming individuals</span>
-    volume = zeros(INDIVS, 1);  <span class="comment">% Column vector for vectorized scores</span>
+    volume = zeros(INDIVS, 1);	<span class="comment">% Column vector for vectorized scores</span>
 </pre><h2>Iterating over each individual in the vectorized input<a name="6"></a></h2><pre class="codeinput">    <span class="keyword">for</span> i = 1 : INDIVS
-</pre><pre class="codeinput">        inferior = false;   <span class="comment">% Flag for current individual's status</span>
+</pre><pre class="codeinput">        inferior = false;	<span class="comment">% Flag for current individual's status</span>
 </pre><p>Reformat each individual into a convenient 2D matrix Reshape <i>N</i>(1, :) as <i>N2</i>(<i>NUM</i>, 3), such that row vector <i>N2</i>(<i>r</i>, :) = [ <i>Cx</i> <i>Cy</i> <i>Cz</i> ]</p><pre class="codeinput">        <span class="comment">% Workaround for MATLAB's column-major matrix policy</span>
         N2 = reshape(N(i,:), 3, NUM)';
 </pre><h2>Calculating the volume of the point cloud polyhedron<a name="9"></a></h2><p>Use Delaunay triangulation to create a tetrahedral mesh, and find the facets and volume of the convex hull over it:</p><pre class="codeinput">        <span class="comment">% TODO: Investigate concave polyhedron volume calculation algorithms</span>
@@ -109,7 +109,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 %% CHAINLINK
 % Calculates the volume and separations for the given node configuration.
 
-%% Signature
+%% Function signature
 function volume = chainlink(N, R, NUM)
 %%
 % Objective: Maximize volume of polyhedron defined by
@@ -117,7 +117,7 @@ function volume = chainlink(N, R, NUM)
 %%
 % Input: Vectorized array of individuals _N_(_INDIVS_, 3 * _NUM_),
 % such that _N_(_r_, :) = [ _Cx1_ _Cy1_ _Cz1_ ... _Cx<NUM>_ _Cy<NUM>_ _Cz<NUM>_ ],
-% vector of base coverage radii of nodes _R_, number of nodes _N_
+% vector of base node coverage radii _R_, number of nodes _N_
 %%
 % Output: Column vector _volume_ of individual scores
 
@@ -125,11 +125,11 @@ function volume = chainlink(N, R, NUM)
 
     %% Preparing the output vector for vectorized input
     INDIVS = size(N, 1);        % Number of incoming individuals
-    volume = zeros(INDIVS, 1);  % Column vector for vectorized scores
+    volume = zeros(INDIVS, 1);	% Column vector for vectorized scores
 
     %% Iterating over each individual in the vectorized input
     for i = 1 : INDIVS
-        inferior = false;   % Flag for current individual's status
+        inferior = false;	% Flag for current individual's status
 
         %%
         % Reformat each individual into a convenient 2D matrix
@@ -170,11 +170,12 @@ function volume = chainlink(N, R, NUM)
                 edgeCover = R(p1) + R(p2);
 
                 %% Defining the penalty for edge coverage gap
-                % _volume_(_i_) = _volume_(_i_) + _edge_ - _edgeCover_ is insufficient
-                % because as the volume increases cubically,
+                % _volume_(_i_) = _volume_(_i_) + _edge_ - _edgeCover_
+                % is insufficient because as the volume increases cubically,
                 % it easily offsets the linear increase in penalty.
-                % Hence, reset the score to zero as soon as the first edge gap is found,
-                % and escape from the inferior individual's loop.
+                % Hence, reset the score to zero as soon as
+                % the first edge gap is found, and
+                % escape from the inferior individual's loop.
                 if edgeCover < edge
                     % TODO: Alternatives to zero-tolerance scheme for gaps
                     volume(i) = 0;
