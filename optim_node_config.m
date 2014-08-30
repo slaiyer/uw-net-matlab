@@ -80,13 +80,21 @@ function bestN = optim_node_config(inCSV, iters, verbose)
     
     %%
     % Display the ranks of each iteration:
-    order
+    if order > 1
+        order
+    end
 
-    %% Saving the best node configuration in a CSV format
-    % Save output to _inCSV_-optim.csv:
-    bestN = N(:,:,1);                   % Save only the best node configuration
-    outCSV = [ inCSV, '-optim.csv' ];   % Append '-optim.csv' to filename
-    csvwrite(outCSV, bestN);
+    %% Saving the output to files
+    % Save the best node configuration to _inCSV_-optim_node_config.csv:
+    bestN = N(:,:,1);   % Save only the best node configuration
+    outN = [ inCSV, '-optim_node_config.csv' ];     % Append to filename
+    csvwrite(outN, bestN);
+    
+    %%
+    % Save the maximal volume achieved to _inCSV_-optim-vol.txt:
+    bestV = V(1);       % Save only the maximal volume
+    outV = [ inCSV, '-optim_vol.txt' ];             % Append to filename
+    csvwrite(outV, bestV);
 
 %% Returning the best configuration among the calculated optimized solutions
 end

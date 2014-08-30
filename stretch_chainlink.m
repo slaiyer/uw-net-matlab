@@ -98,20 +98,44 @@ function [ N, V ] = stretch_chainlink(R, NUM, verbose)
     end
 
     %% Displaying the 3D representation of the solution
-    title = [ 'Node configuration optimized for coverage volume', ...
+    figTitle = [ 'Node configuration optimized for coverage volume', ...
               ', NUM: ', num2str(NUM) ];
-    figure('Name', title, 'NumberTitle', 'on');
+    figure('Name', figTitle, 'NumberTitle', 'on');
 
     %%
-    % Show the scatter plot of the optimized node configuration:
-    scatter3(N(:,1), N(:,2), N(:,3), '.');
+    % Use Delaunay triangulation to create and display the tetrahedral mesh
+    % for the polyhedral volume enclosed by the node configuration.
 
-    % Node coverage envelope colours
-    edgeGreen = [0.8 1 0.8];
-    faceGreen = [0 0.9 0];
+    DT = delaunayTriangulation(N);
+
+    subplot(1, 2, 1);
+    scatter3(N(:,1), N(:,2), N(:,3), '.');
+    hold on;	% Continue with current figure
+    tetramesh(DT);
+    title('Node polyhedron');
+    xlabel('X');
+    ylabel('Y');
+    zlabel('Z');
+    axis equal;
+    axis vis3d;
 
     %%
     % Display translucent spheres depicting the coverage volume of each node.
+
+    hold on;	% Continue with current figure
+    subplot(1, 2, 2);
+    scatter3(N(:,1), N(:,2), N(:,3), '.');
+    hold on;	% Continue with current figure
+    tetramesh(DT);
+    hold on;
+    title('Node coverages');
+    xlabel('X');
+    ylabel('Y');
+    zlabel('Z');
+
+    % Node coverage envelope colours
+    meshGreen = [0.8 1 0.8];
+    faceGreen = [0 0.9 0];
 
     for i = 1 : NUM
         r = R(i);
@@ -121,7 +145,7 @@ function [ N, V ] = stretch_chainlink(R, NUM, verbose)
         z = z * r + N(i,3);
 
         surface(x, y, z, ...
-                'EdgeColor', edgeGreen, ...
+                'EdgeColor', meshGreen, ...
                 'FaceColor', faceGreen, ...
                 'FaceAlpha', 0.1 ...
                );
@@ -129,14 +153,8 @@ function [ N, V ] = stretch_chainlink(R, NUM, verbose)
         pause(0.1);     % Pause 0.1 s after each sphere to simulate animation
     end
 
-    %%
-    % Use Delaunay triangulation to create and display the tetrahedral mesh
-    % for the polyhedral volume enclosed by the node configuration.
-
-    hold on;	% Continue with current figure
-
-    DT = delaunayTriangulation(N);
-    tetramesh(DT);
+    axis equal;
+    axis vis3d;
 
 %% Returning a volume-optimized configuration for the given number of nodes
 end
