@@ -122,12 +122,10 @@ function [ N, V ] = stretch_chainlink(R, NUM, verbose)
     %%
     % Display translucent spheres depicting the coverage volume of each node.
 
-    hold on;	% Continue with current figure
     subplot(1, 2, 2);
     scatter3(N(:,1), N(:,2), N(:,3), '.');
     hold on;	% Continue with current figure
     tetramesh(DT);
-    hold on;
     title('Node coverages');
     xlabel('X');
     ylabel('Y');
