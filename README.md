@@ -20,7 +20,9 @@
 
 **Output:**
 
-* _inCSV_-optim.csv
+* Best node configuration: _inCSV_-optim_node_config.csv
+
+* Maximal volume achieved: _inCSV_-optim_vol.txt
 
 **Example:**
 ```
