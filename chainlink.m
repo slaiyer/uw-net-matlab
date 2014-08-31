@@ -3,15 +3,20 @@
 
 %% Function signature
 function volume = chainlink(N, R, NUM)
+%% Input
+% _N_(_INDIVS_, 3 * _NUM_): Vectorized array of individuals such that
+% _N_(_r_, :) = [ _Cx1_ _Cy1_ _Cz1_ ... _Cx<NUM>_ _Cy<NUM>_ _Cz<NUM>_ ]
 %%
-% Objective: Maximize volume of polyhedron defined by
-% a set of coordinates _N_(_r_, :), subject to edge coverage constraints.
+% _R_: Vector of base node coverage radii
 %%
-% Input: Vectorized array of individuals _N_(_INDIVS_, 3 * _NUM_),
-% such that _N_(_r_, :) = [ _Cx1_ _Cy1_ _Cz1_ ... _Cx<NUM>_ _Cy<NUM>_ _Cz<NUM>_ ],
-% vector of base node coverage radii _R_, number of nodes _N_.
-%%
-% Output: Column vector _volume_ of individual scores.
+% _N_: Number of nodes
+
+%% Output
+% _volume_: Column vector of individual scores
+
+%% Objective
+% Maximize the volume of the polyhedron defined by a set of coordinates
+% _N_(_r_, :), subject to edge coverage constraints.
 
     %% Preparing the output vector for vectorized input
     INDIVS = size(N, 1);        % Number of incoming individuals
@@ -19,14 +24,14 @@ function volume = chainlink(N, R, NUM)
 
     %% Iterating over each individual in the vectorized input
     for i = 1 : INDIVS
-        inferior = false;   % Flag for current individual's status
+        inferior = false;   % Flag for current individual's feasibility status
 
         %%
         % Reformat each individual into a convenient 2D matrix
         % Reshape _N_(1, :) as _N2_(_NUM_, 3),
         % such that row vector _N2_(_r_, :) = [ _Cx_ _Cy_ _Cz_ ]
 
-        % Workaround for MATLAB's column-major matrix policy
+        % Workaround for MATLAB's column-major matrix policy:
         N2 = reshape(N(i,:), 3, NUM)';
 
         %% Calculating the volume of the point cloud polyhedron
@@ -49,34 +54,30 @@ function volume = chainlink(N, R, NUM)
 
         for f = 1 : numFacets
             for v1 = 1 : numVerts
-                v2 = rem(v1, numVerts) + 1;         % Round robin pair traversal
-                p = [ facets(f,v1); facets(f,v2) ];  % Involved vertex indices
+                v2 = rem(v1, numVerts) + 1;         % Round robin traversal
+                p = [ facets(f,v1); facets(f,v2) ]; % Involved vertex indices
                 n = [ N2(p(1),:); N2(p(2),:) ];     % Node coordinates
-                range = [ R(p(1)); R(p(2)) ];        % Node radii
+                range = [ R(p(1)); R(p(2)) ];       % Node radii
 
                 % TODO: Implement anisotropic attenuation in attenuate.m
-                % range = attenuate( ...
-                %                    range, ...
-                %                    [ n(1,:); n(2,:) ],    % Source array ...
-                %                    [ n(2,:); n(1,:) ]     % Target array ...
-                %                  );
+                % range = attenuate(range, n, flipud(n));
 
                 %%
                 % Calculate the separation between two adjacent vertices
                 % and the total coverage along their common edge:
                 edge = norm(n(1,:) - n(2,:));
-                edgeCover = range(1) + range(2);
+                edgeCover = range(1) + range(2);    % Sphere packing
 
                 % Ensure both nodes are in each other's range:
-                % edgeCover = min(range(1), range(2));
+                % edgeCover = min(range(1), range(2));  % Duplex communication
 
                 %% Defining the penalty for edge coverage gap
                 % _volume_(_i_) = _volume_(_i_) + _edge_ - _edgeCover_
                 % is insufficient because as the volume increases cubically,
                 % it easily offsets the linear increase in penalty.
                 % Hence, reset the score to zero as soon as
-                % the first edge gap is found, and
-                % escape from the inferior individual's loop.
+                % the first edge gap is found,
+                % and escape from the inferior individual's loop.
 
                 if edgeCover < edge
                     % TODO: Alternatives to zero-tolerance scheme for gaps

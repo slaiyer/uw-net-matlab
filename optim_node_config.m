@@ -4,23 +4,28 @@
 
 %% Function signature
 function bestN = optim_node_config(inCSV, iters, verbose)
+%% Input
+% _inCSV_: Comma-separated file with base node coverage radii
 %%
-% Input: Comma-separated file _inCSV_ with base node coverage radii,
-% number of initial population iterations _iters_ of the genetic algorithm
-% to seed to select the best solution from, boolean flag _verbose_
-% to specify output verbosity.
+% _iters_: Number of initial population iterations of the genetic algorithm
+% to seed to select the best solution from
 %%
-% Output: Best node configuration _N_(_NUM_, 3),
-% such that row vector _N_(_r_, :) = [ _Cx_ _Cy_ _Cz_ ],
-% based on the maximal polyhedral volume _V_ enclosed by it.
+% _verbose_: Boolean flag to specify output verbosity
+
+%% Output
+% _bestN_(_NUM_, 3): Best node configuration such that
+% row vector _bestN_(_r_, :) = [ _Cx_ _Cy_ _Cz_ ],
+% based on the maximal polyhedral volume _V_ enclosed by it
 
     %% Checking for malformed arguments
     % Input is preferred in a comma-delimited sequence of
-    % double-precision values without line breaks. In the case that
-    % multi-line CSV input is provided and is interpreted as having ghost zeros,
+    % double-precision values without line breaks.
+    %%
+    % In the case that multi-line CSV input is provided,
+    % and is interpreted with ghost zeros,
     % remove all commas from the end of each line.
 
-    argError = 'Malformed input arguments. Please read the source for help.';
+    argError = 'Malformed input arguments: Please refer to the source.';
 
     switch nargin
         case 1
@@ -47,9 +52,10 @@ function bestN = optim_node_config(inCSV, iters, verbose)
     % _R_(1, :) = [ _R1_ ... _R<NUM>_ ]
 
     R = csvread(inCSV);
-    NUM = numel(R);
+    NUM = numel(R);     % Number of nodes
 
     if size(R, 1) > 1
+        % Workaround for MATLAB's column-major matrix policy:
         R = reshape(R', 1, NUM);
     end
 
@@ -61,12 +67,12 @@ function bestN = optim_node_config(inCSV, iters, verbose)
     V = zeros(iters, 1);        % Volumes of each incoming node configuration
 
     for i = 1 : iters
-        [ N(:,:,i), V(i) ] = stretch_chainlink(R, NUM, verbose);
+        [ N(:,:,i), V(i) ] = stretch_chainlink(R, verbose);
     end
 
     %% Sorting solutions based on optimality
     % Sort node configurations based on the descending order of
-    % the polyhedral volume onclosed by wach.
+    % the polyhedral volume onclosed by each.
 
     [ V, order ] = sort(V, 'descend');
     N = N(:,:,order);
@@ -85,13 +91,13 @@ function bestN = optim_node_config(inCSV, iters, verbose)
     end
 
     %% Saving the output to files
-    % Save the best node configuration to _inCSV_-optim_node_config.csv:
+    % Save the best node configuration to _inCSV_-optim_node_config.csv
     bestN = N(:,:,1);   % Save only the best node configuration
     outN = [ inCSV, '-optim_node_config.csv' ];     % Append to filename
     csvwrite(outN, bestN);
 
     %%
-    % Save the maximal volume achieved to _inCSV_-optim-vol.txt:
+    % Save the maximal volume achieved to _inCSV_-optim-vol.txt
     bestV = V(1);       % Save only the maximal volume
     outV = [ inCSV, '-optim_vol.txt' ];             % Append to filename
     csvwrite(outV, bestV);

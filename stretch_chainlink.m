@@ -2,33 +2,49 @@
 % Uses a vectorized genetic algorithm to optimize _CHAINLINK_.
 
 %% Function signature
-function [ N, V ] = stretch_chainlink(R, NUM, verbose)
+function [ N, V ] = stretch_chainlink(R, verbose)
+%% Input
+% _R_: Vector of base node coverage radii
 %%
-% Input: Vector of base node coverage radii _R_, number of nodes _N_,
-% boolean flag _verbose_ to specify output verbosity.
-%%
-% Output: Optimized node configuration _N_(_NUM_, 3),
-% such that row vector _N_(_r_, :) = [ _Cx_ _Cy_ _Cz_ ],
-% polyhedral volume _V_ enclosed by _N_.
+% _verbose_: Boolean flag to specify output verbosity
 
-    %% Initializing constant data
-    % Set the initial population seeding range.
+%% Output
+% _N_(_NUM_, 3): Optimized node configuration such that
+% row vector _N_(_r_, :) = [ _Cx_ _Cy_ _Cz_ ]
+%%
+% _V_: Polyhedral volume enclosed by _N_
+
     %%
-    % min(R) / sqrt(3) is a conservative setting, ensuring that the
-    % cubic diagonal of the initial population range will fit in the
-    % lowest coverage radius of all nodes.
+    % Check for malformed arguments:
 
-    HALFRANGE = min(R) / (2 * sqrt(3));     % Center roughly around origin
+    argError = 'Malformed input arguments: Please refer to the source.';
 
-    %% Setting the genetic algorithm options
+    switch nargin
+        case 1
+            verbose = false;
+        case 2
+            if ~islogical(verbose)
+                error(argError);
+            end
+        otherwise
+            error(argError);
+    end
+
+    %% Setting genetic algorithm options
     % _'PopInitRange'_ sets the initial population seeding range,
     % within which the first generation is defined using _'CreationFcn'_.
+    %%
+    % min(R) / sqrt(3) is a conservative setting, ensuring that
+    % the cubic diagonal of the initial population range will fit
+    % in the lowest coverage radius of all nodes.
     %%
     % _'Vectorized'_ specifies whether the GA is to be called with
     % multiple individuals passed to it in each iteration or not.
 
     % TODO: Set options optimally
-    oldopts = gaoptimset(@ga);      % Load default options explicitly
+    HALFRANGE = min(R) / (2 * sqrt(3));         % Center roughly around origin
+
+    oldopts = gaoptimset(@ga);                  % Load default options
     newopts = ...
         struct( ...
             'PopInitRange', [ -HALFRANGE; HALFRANGE ], ...  % { [ -10; 10 ] }
@@ -45,6 +61,8 @@ function [ N, V ] = stretch_chainlink(R, NUM, verbose)
 
     %% Invoking the genetic algorithm
     % Maximize _CHAINLINK_ by minimizing the negative of its score:
+    NUM = numel(R);     % Number of nodes
+
     objFunc = @(N) -chainlink(N, R, NUM);   % Create function handle for GA
 
     tic    % Start timer
@@ -66,8 +84,8 @@ function [ N, V ] = stretch_chainlink(R, NUM, verbose)
     N = reshape(N, 3, NUM)';
 
     %%
-    % Return the negative of _fval_ as the positive volume of the polyhedron
-    % enclosed by _N_:
+    % Return the negative of _fval_ as the positive volume of
+    % the polyhedron enclosed by _N_:
     V = -fval;
 
     %%
@@ -88,8 +106,8 @@ function [ N, V ] = stretch_chainlink(R, NUM, verbose)
     end
 
     %%
-    % Display the Euclidean distances between each pair of nodes
-    % in a tabular format.
+    % Display the Euclidean distances between
+    % each pair of nodes in a tabular format.
 
     if verbose == true
         sep = array2table(sep', 'VariableNames', labels, 'RowNames', labels)
@@ -106,7 +124,7 @@ function [ N, V ] = stretch_chainlink(R, NUM, verbose)
     % Use Delaunay triangulation to create and display the tetrahedral mesh
     % for the polyhedral volume enclosed by the node configuration.
 
-   DT = delaunayTriangulation(N);
+    DT = delaunayTriangulation(N);
 
     % Plot colours
     meshRed = [ 0.5 0 0 ];
@@ -150,8 +168,6 @@ function [ N, V ] = stretch_chainlink(R, NUM, verbose)
                  'FaceColor', green, ...
                  'FaceAlpha', 0.1 ...
                );
-
-        pause(0.1);     % Pause 0.1 s after each sphere to simulate animation
     end
 
     hold on;
