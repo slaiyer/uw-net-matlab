@@ -13,15 +13,13 @@ function volume = chainlink(N, R, NUM)
 %%
 % Output: Column vector _volume_ of individual scores.
 
-% TODO: Implement anisotropic attenuation
-
     %% Preparing the output vector for vectorized input
     INDIVS = size(N, 1);        % Number of incoming individuals
-    volume = zeros(INDIVS, 1);	% Column vector for vectorized scores
+    volume = zeros(INDIVS, 1);  % Column vector for vectorized scores
 
     %% Iterating over each individual in the vectorized input
     for i = 1 : INDIVS
-        inferior = false;	% Flag for current individual's status
+        inferior = false;   % Flag for current individual's status
 
         %%
         % Reformat each individual into a convenient 2D matrix
@@ -51,15 +49,26 @@ function volume = chainlink(N, R, NUM)
 
         for f = 1 : numFacets
             for v1 = 1 : numVerts
-                v2 = rem(v1, numVerts) + 1;     % Round robin pair traversal
-                p1 = facets(f,v1);
-                p2 = facets(f,v2);
+                v2 = rem(v1, numVerts) + 1;         % Round robin pair traversal
+                p = [ facets(f,v1); facets(f,v2) ];  % Involved vertex indices
+                n = [ N2(p(1),:); N2(p(2),:) ];     % Node coordinates
+                range = [ R(p(1)); R(p(2)) ];        % Node radii
+
+                % TODO: Implement anisotropic attenuation in attenuate.m
+                % range = attenuate( ...
+                %                    range, ...
+                %                    [ n(1,:); n(2,:) ],    % Source array ...
+                %                    [ n(2,:); n(1,:) ]     % Target array ...
+                %                  );
 
                 %%
                 % Calculate the separation between two adjacent vertices
                 % and the total coverage along their common edge:
-                edge = norm(N2(p1,:) - N2(p2,:));
-                edgeCover = R(p1) + R(p2);
+                edge = norm(n(1,:) - n(2,:));
+                edgeCover = range(1) + range(2);
+
+                % Ensure both nodes are in each other's range:
+                % edgeCover = min(range(1), range(2));
 
                 %% Defining the penalty for edge coverage gap
                 % _volume_(_i_) = _volume_(_i_) + _edge_ - _edgeCover_

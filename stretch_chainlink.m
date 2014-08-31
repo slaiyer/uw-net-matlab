@@ -12,7 +12,7 @@ function [ N, V ] = stretch_chainlink(R, NUM, verbose)
 % polyhedral volume _V_ enclosed by _N_.
 
     %% Initializing constant data
-	% Set the initial population seeding range.
+    % Set the initial population seeding range.
     %%
     % min(R) / sqrt(3) is a conservative setting, ensuring that the
     % cubic diagonal of the initial population range will fit in the
@@ -38,14 +38,14 @@ function [ N, V ] = stretch_chainlink(R, NUM, verbose)
     options = gaoptimset(oldopts, newopts);     % Overwrite selected parameters
 
     if verbose == true
-        options = gaoptimset(oldopts, 'Display', 'iter');
+        options = gaoptimset(options, 'Display', 'iter');
     else
-        options = gaoptimset(oldopts, 'Display', 'final');
+        options = gaoptimset(options, 'Display', 'final');
     end
 
     %% Invoking the genetic algorithm
     % Maximize _CHAINLINK_ by minimizing the negative of its score:
-    objFunc = @(N) -chainlink(N, R, NUM);	% Create function handle for GA
+    objFunc = @(N) -chainlink(N, R, NUM);   % Create function handle for GA
 
     tic    % Start timer
 
@@ -63,7 +63,7 @@ function [ N, V ] = stretch_chainlink(R, NUM, verbose)
     % such that row vector _N_(_r_, :) = [ _Cx_ _Cy_ _Cz_ ]
 
     % Workaround for MATLAB's column-major matrix policy:
-	N = reshape(N, 3, NUM)';
+    N = reshape(N, 3, NUM)';
 
     %%
     % Return the negative of _fval_ as the positive volume of the polyhedron
@@ -81,7 +81,7 @@ function [ N, V ] = stretch_chainlink(R, NUM, verbose)
         end
     end
 
-    labels = cell(1, NUM);	% Row and column headers
+    labels = cell(1, NUM);  % Row and column headers
 
     for i = 1 : NUM
         labels{i} = strcat('Node', num2str(i));
@@ -106,12 +106,22 @@ function [ N, V ] = stretch_chainlink(R, NUM, verbose)
     % Use Delaunay triangulation to create and display the tetrahedral mesh
     % for the polyhedral volume enclosed by the node configuration.
 
-    DT = delaunayTriangulation(N);
+   DT = delaunayTriangulation(N);
+
+    % Plot colours
+    meshRed = [ 0.5 0 0 ];
+    faceOrange = [ 1 0.9 0.7 ];
+    green = [ 0.5 1 0.5 ];
 
     subplot(1, 2, 1);
     scatter3(N(:,1), N(:,2), N(:,3), '.');
-    hold on;	% Continue with current figure
-    tetramesh(DT);
+    hold on;    % Continue with current figure
+    tetramesh( ...
+               DT, ...
+               'EdgeColor', meshRed, ...
+               'EdgeAlpha', 0.1, ...
+               'FaceColor', faceOrange ...
+             );
     title('Node polyhedron');
     xlabel('X');
     ylabel('Y');
@@ -124,33 +134,37 @@ function [ N, V ] = stretch_chainlink(R, NUM, verbose)
 
     subplot(1, 2, 2);
     scatter3(N(:,1), N(:,2), N(:,3), '.');
-    hold on;	% Continue with current figure
-    tetramesh(DT);
-    title('Node coverages');
-    xlabel('X');
-    ylabel('Y');
-    zlabel('Z');
-
-    % Node coverage envelope colours
-    meshGreen = [0.8 1 0.8];
-    faceGreen = [0 0.9 0];
+    hold on;    % Continue with current figure
 
     for i = 1 : NUM
         r = R(i);
-        [ x, y, z ] = sphere(16);
+        [ x, y, z ] = sphere(32);
         x = x * r + N(i,1);
         y = y * r + N(i,2);
         z = z * r + N(i,3);
 
-        surface(x, y, z, ...
-                'EdgeColor', meshGreen, ...
-                'FaceColor', faceGreen, ...
-                'FaceAlpha', 0.1 ...
+        surface( ...
+                 x, y, z, ...
+                 'EdgeColor', green, ...
+                 'EdgeAlpha', 0.2, ...
+                 'FaceColor', green, ...
+                 'FaceAlpha', 0.1 ...
                );
 
         pause(0.1);     % Pause 0.1 s after each sphere to simulate animation
     end
 
+    hold on;
+    tetramesh( ...
+               DT, ...
+               'EdgeColor', meshRed, ...
+               'EdgeAlpha', 0.1, ...
+               'FaceColor', faceOrange ...
+             );
+    title('Node coverages');
+    xlabel('X');
+    ylabel('Y');
+    zlabel('Z');
     axis equal;
     axis vis3d;
 
