@@ -1,9 +1,12 @@
 %% OPTIM_NODE_CONFIG
 % Calculates the best volume-optimized node configuration
+%%
+% Author: Sidharth Iyer <246964@gmail.com>
 % for the given base node coverage radii.
 
 %% Function signature
 function bestN = optim_node_config(inCSV, iters, verbose)
+
 %% Input
 % _inCSV_: Comma-separated file with base node coverage radii
 %%
@@ -72,13 +75,14 @@ function bestN = optim_node_config(inCSV, iters, verbose)
 
     %% Sorting solutions based on optimality
     % Sort node configurations based on the descending order of
-    % the polyhedral volume onclosed by each.
+    % the polyhedral volume enclosed by each:
 
     [ V, order ] = sort(V, 'descend');
     N = N(:,:,order);
 
     %%
     % Display sorted solutions if verbosity is required:
+
     if verbose == true
         V
         N
@@ -86,21 +90,26 @@ function bestN = optim_node_config(inCSV, iters, verbose)
 
     %%
     % Display the ranks of each iteration:
+
     if iters > 1
         order
     end
 
     %% Saving the output to files
-    % Save the best node configuration to _inCSV_-optim_node_config.csv
+    % Save the best node configuration to _inCSV_-optim_node_config.csv:
+
     bestN = N(:,:,1);   % Save only the best node configuration
     outN = [ inCSV, '-optim_node_config.csv' ];     % Append to filename
     csvwrite(outN, bestN);
 
     %%
-    % Save the maximal volume achieved to _inCSV_-optim-vol.txt
+    % Save the maximal volume achieved to _inCSV_-optim-vol.txt:
+
     bestV = V(1);       % Save only the maximal volume
     outV = [ inCSV, '-optim_vol.txt' ];             % Append to filename
     csvwrite(outV, bestV);
 
-%% Returning the best configuration among the calculated optimized solutions
+%%
+% Return the best configuration among the calculated optimized solutions:
+
 end
