@@ -32,4 +32,4 @@ optim_node_config('test_radii.csv', 4, true)
 
 **Documentation:**
 
-    * MATLAB-generated documentation from the source code is in the `/html/` directory.
+    * MATLAB-generated documentation from the source code is in the **html** directory.
