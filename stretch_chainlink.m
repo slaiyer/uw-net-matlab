@@ -34,12 +34,15 @@ function [ N, V ] = stretch_chainlink(R, verbose)
     end
 
     %% Setting genetic algorithm options
-    % _'PopInitRange'_ sets the initial population seeding range,
-    % within which the first generation is defined using _'CreationFcn'_.
-    %%
     % min(R) / sqrt(3) is a conservative setting, ensuring that
     % the cubic diagonal of the initial population range will fit
     % in the lowest coverage radius of all nodes.
+    %%
+    % _'TolFun'_ set the stopiing criterios based on
+    % the average change of fitness function return value.
+    %%
+    % _'PopInitRange'_ sets the initial population seeding range,
+    % within which the first generation is defined using _'CreationFcn'_.
     %%
     % _'Vectorized'_ specifies whether the GA is to be called with
     % multiple individuals passed to it in each iteration or not.
@@ -49,6 +52,7 @@ function [ N, V ] = stretch_chainlink(R, verbose)
     oldopts = gaoptimset(@ga);                  % Load default options
     newopts = ...
         struct( ...
+            'TolFun',       1e-4, ...                       % { 1e-6 }
             'PopInitRange', [ -HALFRANGE; HALFRANGE ], ...  % { [ -10; 10 ] }
             'PlotFcns',     { @gaplotbestf }, ...           % { [] }
             'Vectorized',   'on' ...                        % { 'off' }
@@ -140,7 +144,6 @@ function [ N, V ] = stretch_chainlink(R, verbose)
     tetramesh( ...
                DT, ...
                'EdgeColor', meshRed, ...
-               'EdgeAlpha', 0.1, ...
                'FaceColor', faceOrange ...
              );
     title('Node polyhedron');
@@ -181,7 +184,6 @@ function [ N, V ] = stretch_chainlink(R, verbose)
     tetramesh( ...
                DT, ...
                'EdgeColor', meshRed, ...
-               'EdgeAlpha', 0.1, ...
                'FaceColor', faceOrange ...
              );
     title('Node coverages');

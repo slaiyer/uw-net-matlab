@@ -25,11 +25,15 @@ function volume = chainlink(N, R, NUM)
 
     INDIVS = size(N, 1);        % Number of incoming individuals
     volume = zeros(INDIVS, 1);  % Column vector for vectorized scores
+    overlapFactor = 0;
 
     %% Iterating over each individual in the vectorized input
 
     for i = 1 : INDIVS
+    %{
+        % For option 3:
         inferior = false;   % Flag for current individual's feasibility status
+    %}
 
         %%
         % Reformat each individual into a convenient 2D matrix
@@ -59,10 +63,9 @@ function volume = chainlink(N, R, NUM)
 
         for f = 1 : numFacets
             for v1 = 1 : numVerts
-                v2 = rem(v1, numVerts) + 1;         % Round robin traversal
-                p = [ facets(f,v1); facets(f,v2) ]; % Involved vertex indices
-                n = [ N2(p(1),:); N2(p(2),:) ];     % Node coordinates
-                range = [ R(p(1)); R(p(2)) ];       % Node radii
+                v2 = rem(v1, numVerts) + 1;             % Round robin traversal
+                p = [ facets(f,v1); facets(f,v2) ];     % Vertex indices
+                range = [ R(p(1)); R(p(2)) ];           % Node radii
 
                 % range = attenuate(range, n, flipud(n));
 
@@ -70,46 +73,41 @@ function volume = chainlink(N, R, NUM)
                 % Calculate the separation between two adjacent vertices
                 % and the total coverage along their common edge:
 
-                edge = norm(n(1,:) - n(2,:));
-                edgeCover = range(1) + range(2);    % Sphere packing
+                edge = norm(N2(p(1),:) - N2(p(2),:));
+                coverage = range(1) + range(2);         % Sphere packing
+                gap = edge - coverage;
 
                 % Ensure both nodes are in each other's range:
-                % edgeCover = min(range(1), range(2));  % Duplex communication
+                % coverage = min(range(1), range(2));   % Duplex communication
 
                 %% Defining the penalty for edge coverage gap
-                % _volume_(_i_) = _volume_(_i_) + _edge_ - _edgeCover_
+                % _volume_(_i_) = _volume_(_i_) + _edge_ - _coverage_
                 % is insufficient because as the volume increases cubically,
                 % it easily offsets the linear increase in penalty.
 
-                overlapFactor = 0;
-
-                if edgeCover < edge * (1 + overlapFactor)
-                %{
+                if gap > edge * overlapFactor
                     %%
                     % Option 1: Split the gap in edge coverage between
                     % the two nodes proportionately and calculate
                     % the volume deficits, the sum of which is the penalty.
-
-                    rFactor = (edge - edgeCover) / (range(1) + range(2)) - 1;
-                    rDeficit = [ range(1) * rFactor; range(2) * rFactor ];
-                    penalty = 4 / 3 * pi * (rDeficit(1) ^ 3 + rDeficit(2) ^ 3);
-
+                %
+                    deficit = range * gap / coverage;
+                    penalty = (range(1) + deficit(1)) ^ 3 - range(1) ^ 3 ...
+                                + (range(2) + deficit(2)) ^ 3 - range(2) ^ 3;
                     volume(i) = volume(i) - penalty;
                 %}
 
-                %{
                     %%
-                    % Option 2: Halve the volume for each gap in edge coverage.
-
+                    % Option 2: Halve the score for each gap in edge coverage:
+                %{
                     % volume(i) = volume(i) / 2;
                 %}
 
-                %
                     %%
                     % Option 3: Reset the score to zero as soon as
                     % the first edge gap is found, and deem
                     % the current individual inferior.
-
+                %{
                     volume(i) = 0;
 
                     % Escape inferior individual's loop _(1/3)_:
@@ -118,12 +116,12 @@ function volume = chainlink(N, R, NUM)
                 %}
                 end
             end
-    %{
+    %
         % For options 1 and 2:
         end
     %}
 
-    %
+    %{
         % For option 3:
 
             % Escape inferior individual's loop _(2/3)_:
