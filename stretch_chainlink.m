@@ -131,7 +131,7 @@ function [ N, V ] = stretch_chainlink(R, verbose)
     [ ~, V ] = convexHull(DT);
 
     % Plot colours
-    meshRed = [ 0.5 0 0 ];
+    meshRed = [ 0.666 0 0 ];
     faceOrange = [ 1 0.9 0.7 ];
     green = [ 0.5 1 0.5 ];
 
