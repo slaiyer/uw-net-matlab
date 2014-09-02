@@ -25,7 +25,7 @@ function volume = chainlink(N, R, NUM)
 
     INDIVS = size(N, 1);        % Number of incoming individuals
     volume = zeros(INDIVS, 1);  % Column vector for vectorized scores
-    overlapFactor = 0;
+    overlapFraction = 0;        % Overlap along edge; only for sphere packing
 
     %% Iterating over each individual in the vectorized input
 
@@ -73,25 +73,26 @@ function volume = chainlink(N, R, NUM)
                 % Calculate the separation between two adjacent vertices
                 % and the total coverage along their common edge:
 
-                edge = norm(N2(p(1),:) - N2(p(2),:));
+                edge = norm(N2(p(1),:) - N2(p(2),:));   % Euclidean distance
                 coverage = range(1) + range(2);         % Sphere packing
-                gap = edge - coverage;
 
                 % Ensure both nodes are in each other's range:
-                % coverage = min(range(1), range(2));   % Duplex communication
+                % coverage = min(range(1), range(2));   % Two-way communication
+
+                overlap = coverage - edge;
 
                 %% Defining the penalty for edge coverage gap
                 % _volume_(_i_) = _volume_(_i_) + _edge_ - _coverage_
                 % is insufficient because as the volume increases cubically,
                 % it easily offsets the linear increase in penalty.
 
-                if gap > edge * overlapFactor
+                if overlap < edge * overlapFraction
                     %%
                     % Option 1: Split the gap in edge coverage between
                     % the two nodes proportionately and calculate
                     % the volume deficits, the sum of which is the penalty.
                 %
-                    deficit = range * gap / coverage;
+                    deficit = range * -overlap / coverage;  % gap = -overlap
                     penalty = (range(1) + deficit(1)) ^ 3 - range(1) ^ 3 ...
                                 + (range(2) + deficit(2)) ^ 3 - range(2) ^ 3;
                     volume(i) = volume(i) - penalty;
