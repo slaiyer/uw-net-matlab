@@ -4,6 +4,7 @@
 % Copyright 2014 Sidharth Iyer <246964@gmail.com>
 %
 % Examples:
+%
 %   Use OPTIM_NODE_CONFIG or STRETCH_CHAINLINK as the entry point.
 %
 % See also OPTIM_NODE_CONFIG, STRETCH_CHAINLINK, ATTENUATE
@@ -70,16 +71,19 @@ function volume = chainlink(N, R, NUM)
       for v1 = 1 : numVerts
         v2 = rem(v1, numVerts) + 1;           % Round robin traversal
         p = [ facets(f,v1); facets(f,v2) ];   % Vertex indices
+        n = [ N2(p(1),:); N2(p(2),:) ];       % Node coordinates
         range = [ R(p(1)); R(p(2)) ];         % Node radii
 
-        % range = attenuate(range, n, flipud(n));
+        %%
+        % Return attenated ranges between the source and target nodes:
+        range = attenuate(range, n, flipud(n));
 
         %%
         % Calculate the separation between two adjacent vertices
         % and the total coverage along their common edge:
 
-        edge = norm(N2(p(1),:) - N2(p(2),:));   % Euclidean distance
-        coverage = range(1) + range(2);         % Sphere packing
+        edge = norm(n(1,:) - n(2,:));         % Euclidean distance
+        coverage = range(1) + range(2);       % Sphere packing
 
         % Ensure both nodes are in each other's range:
         % coverage = min(range(1), range(2));   % Two-way communication

@@ -5,6 +5,7 @@
 % Copyright 2014 Sidharth Iyer <246964@gmail.com>
 %
 % Examples:
+%
 %   STRETCH_CHAINLINK([ 12 23 34 45 ])
 %   Optimizes the node configuration for the given node radii in the vector.
 %

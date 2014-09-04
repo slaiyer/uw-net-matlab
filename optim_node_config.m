@@ -5,6 +5,7 @@
 % Copyright 2014 Sidharth Iyer <246964@gmail.com>
 %
 % Examples:
+%
 %   OPTIM_NODE_CONFIG('test_radii.csv')
 %   Optimizes the node configuration for the node radii in test_radii.csv
 %

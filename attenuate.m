@@ -5,6 +5,7 @@
 % Copyright 2014 Sidharth Iyer <246964@gmail.com>
 %
 % Examples:
+%
 %   Use OPTIM_NODE_CONFIG or STRETCH_CHAINLINK as the entry point.
 %
 % See also OPTIM_NODE_CONFIG, STRETCH_CHAINLINK, CHAINLINK
@@ -24,6 +25,8 @@ function range = attenuate(R, S, T)
 %% Output
 % _range_: Column vector of attenuated ranges in the target directions
 
+%% Pseudocode
+
 % Iterate row-wise over input arrays
 %   Calculate unit vector UV(i) from S(i) to T(i)
 %   Use data sets to integrate attenuation factor along UV(i)
@@ -32,7 +35,6 @@ function range = attenuate(R, S, T)
 
 %%
 % Return the attenuated ranges for the given sources:
-% DUMMY:
-  range = sum(R + S + T);
+  range = R;  % Dummy return value for stub
 
 end
