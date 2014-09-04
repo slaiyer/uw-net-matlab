@@ -1,8 +1,13 @@
 %% ATTENUATE
 % Calculates and applies directional attenuation
 % to the coverage ranges of the given sources.
-%%
-% Author: Sidharth Iyer <246964@gmail.com>
+%
+% Copyright 2014 Sidharth Iyer <246964@gmail.com>
+%
+% Examples:
+%   Use OPTIM_NODE_CONFIG or STRETCH_CHAINLINK as the entry point.
+%
+% See also OPTIM_NODE_CONFIG, STRETCH_CHAINLINK, CHAINLINK
 
 %% Function signature
 function range = attenuate(R, S, T)
@@ -20,12 +25,14 @@ function range = attenuate(R, S, T)
 % _range_: Column vector of attenuated ranges in the target directions
 
 % Iterate row-wise over input arrays
-%     Calculate unit vector UV(i) from S(i) to T(i)
-%     Use data sets to integrate attenuation factor along UV(i)
-%     Apply attenuation factor to R(i) and save as range(i)
+%   Calculate unit vector UV(i) from S(i) to T(i)
+%   Use data sets to integrate attenuation factor along UV(i)
+%   Apply attenuation factor to R(i) and save as range(i)
 % Return range(:)
 
 %%
 % Return the attenuated ranges for the given sources:
+% DUMMY:
+  range = sum(R + S + T);
 
 end
