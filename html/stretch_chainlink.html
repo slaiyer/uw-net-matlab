@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>STRETCH_CHAINLINK</title><meta name="generator" content="MATLAB 8.3"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2014-08-30"><meta name="DC.source" content="stretch_chainlink.m"><style type="text/css">
+      --><title>STRETCH_CHAINLINK</title><meta name="generator" content="MATLAB 8.3"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2014-09-04"><meta name="DC.source" content="stretch_chainlink.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -66,230 +66,469 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style></head><body><div class="content"><h1>STRETCH_CHAINLINK</h1><!--introduction--><p>Uses a vectorized genetic algorithm to optimize <i>CHAINLINK</i>.</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Function signature</a></li><li><a href="#4">Initializing constant data</a></li><li><a href="#6">Setting the genetic algorithm options</a></li><li><a href="#8">Invoking the genetic algorithm</a></li><li><a href="#9">Processing the genetic algrithm output</a></li><li><a href="#13">Displaying the 3D representation of the solution</a></li><li><a href="#17">Returning a volume-optimized configuration for the given number of nodes</a></li></ul></div><h2>Function signature<a name="1"></a></h2><pre class="codeinput"><span class="keyword">function</span> [ N, V ] = stretch_chainlink(R, NUM, verbose)
-</pre><p>Input: Vector of base node coverage radii <i>R</i>, number of nodes <i>N</i>, boolean flag <i>verbose</i> to specify output verbosity.</p><p>Output: Optimized node configuration <i>N</i>(<i>NUM</i>, 3), such that row vector <i>N</i>(<i>r</i>, :) = [ <i>Cx</i> <i>Cy</i> <i>Cz</i> ], polyhedral volume <i>V</i> enclosed by <i>N</i>.</p><h2>Initializing constant data<a name="4"></a></h2><pre class="codeinput">	<span class="comment">% Set the initial population seeding range.</span>
-</pre><p>min&reg; / sqrt(3) is a conservative setting, ensuring that the cubic diagonal of the initial population range will fit in the lowest coverage radius of all nodes.</p><pre class="codeinput">    HALFRANGE = min(R) / (2 * sqrt(3));     <span class="comment">% Center roughly around origin</span>
-</pre><h2>Setting the genetic algorithm options<a name="6"></a></h2><p><i>'PopInitRange'</i> sets the initial population seeding range, within which the first generation is defined using <i>'CreationFcn'</i>.</p><p><i>'Vectorized'</i> specifies whether the GA is to be called with multiple individuals passed to it in each iteration or not.</p><pre class="codeinput">    <span class="comment">% TODO: Set options optimally</span>
-    oldopts = gaoptimset(@ga);      <span class="comment">% Load default options explicitly</span>
-    newopts = <span class="keyword">...</span>
-        struct( <span class="keyword">...</span>
+  </style></head><body><div class="content"><h1>STRETCH_CHAINLINK</h1><!--introduction--><p>Uses a vectorized genetic algorithm to optimize the node configuration for the given base node coverage radii.</p><p>Copyright 2014 Sidharth Iyer <a href="246964@gmail.com">246964@gmail.com</a></p><p>Examples:</p><pre class="language-matlab">STRETCH_CHAINLINK([ 12 23 34 45 ])
+Optimizes <span class="string">the</span> <span class="string">node</span> <span class="string">configuration</span> <span class="string">for</span> <span class="string">the</span> <span class="string">given</span> <span class="string">node</span> <span class="string">radii</span> <span class="string">in</span> <span class="string">the</span> <span class="string">vector.</span>
+</pre><pre class="language-matlab">STRETCH_CHAINLINK([ 12 23 34 45 ], true)
+Optimizes <span class="string">the</span> <span class="string">node</span> <span class="string">configuration</span> <span class="string">in</span> <span class="string">a</span> <span class="string">verbose</span> <span class="string">fashion.</span>
+</pre><p>See also OPTIM_NODE_CONFIG, CHAINLINK, ATTENUATE</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Function signature</a></li><li><a href="#3">Input</a></li><li><a href="#5">Output</a></li><li><a href="#8">Setting genetic algorithm options</a></li><li><a href="#12">Invoking the genetic algorithm</a></li><li><a href="#13">Processing the genetic algrithm output</a></li><li><a href="#15">Displaying the 3D representation of the solution</a></li></ul></div><h2>Function signature<a name="1"></a></h2><pre class="codeinput"><span class="keyword">function</span> [ N, V ] = stretch_chainlink(R, verbose)
+</pre><h2>Input<a name="3"></a></h2><p><i>R</i>: Vector of base node coverage radii</p><p><i>verbose</i>: Boolean flag to specify output verbosity</p><h2>Output<a name="5"></a></h2><p><i>N</i>(<i>NUM</i>, 3): Optimized node configuration such that row vector <i>N</i>(<i>i</i>, :) = [ <i>Cx</i> <i>Cy</i> <i>Cz</i> ]</p><p><i>V</i>: Polyhedral volume enclosed by <i>N</i></p><p>Check for malformed arguments:</p><pre class="codeinput">  argError = <span class="string">'Malformed input arguments: Please refer to the source.'</span>;
+
+  <span class="keyword">switch</span> nargin
+    <span class="keyword">case</span> 1
+      verbose = false;
+    <span class="keyword">case</span> 2
+      <span class="keyword">if</span> ~islogical(verbose)
+        error(argError);
+      <span class="keyword">end</span>
+    <span class="keyword">otherwise</span>
+      error(argError);
+  <span class="keyword">end</span>
+</pre><h2>Setting genetic algorithm options<a name="8"></a></h2><p>min&reg; / sqrt(3) is a conservative setting, ensuring that the cubic diagonal of the initial population range will fit in the lowest coverage radius of all nodes.</p><p><i>'TolFun'</i> set the stopiing criterios based on the average change of fitness function return value.</p><p><i>'PopInitRange'</i> sets the initial population seeding range, within which the first generation is defined using <i>'CreationFcn'</i>.</p><p><i>'Vectorized'</i> specifies whether the GA is to be called with multiple individuals passed to it in each iteration or not.</p><pre class="codeinput">  HALFRANGE = min(R) / (2 * sqrt(3));     <span class="comment">% Center roughly around origin</span>
+
+  oldopts = gaoptimset(@ga);          <span class="comment">% Load default options</span>
+  newopts = <span class="keyword">...</span>
+    struct( <span class="keyword">...</span>
+            <span class="string">'TolFun'</span>,     1e-4, <span class="keyword">...</span><span class="comment">                         % { 1e-6 }</span>
             <span class="string">'PopInitRange'</span>, [ -HALFRANGE; HALFRANGE ], <span class="keyword">...</span><span class="comment">  % { [ -10; 10 ] }</span>
-            <span class="string">'PlotFcns'</span>,     { @gaplotbestf }, <span class="keyword">...</span><span class="comment">           % { [] }</span>
+            <span class="string">'PlotFcns'</span>,   { @gaplotbestf }, <span class="keyword">...</span><span class="comment">             % { [] }</span>
             <span class="string">'Vectorized'</span>,   <span class="string">'on'</span> <span class="keyword">...</span><span class="comment">                        % { 'off' }</span>
-              );
-    options = gaoptimset(oldopts, newopts);     <span class="comment">% Overwrite selected parameters</span>
+          );
+  options = gaoptimset(oldopts, newopts);   <span class="comment">% Overwrite selected parameters</span>
 
-    <span class="keyword">if</span> verbose == true
-        options = gaoptimset(oldopts, <span class="string">'Display'</span>, <span class="string">'iter'</span>);
-    <span class="keyword">else</span>
-        options = gaoptimset(oldopts, <span class="string">'Display'</span>, <span class="string">'final'</span>);
-    <span class="keyword">end</span>
-</pre><h2>Invoking the genetic algorithm<a name="8"></a></h2><p>Maximize <i>CHAINLINK</i> by minimizing the negative of its score:</p><pre class="codeinput">    objFunc = @(N) -chainlink(N, R, NUM);	<span class="comment">% Create function handle for GA</span>
+  <span class="keyword">if</span> verbose == true
+    options = gaoptimset(options, <span class="string">'Display'</span>, <span class="string">'iter'</span>);
+  <span class="keyword">else</span>
+    options = gaoptimset(options, <span class="string">'Display'</span>, <span class="string">'final'</span>);
+  <span class="keyword">end</span>
+</pre><h2>Invoking the genetic algorithm<a name="12"></a></h2><p>Maximize <i>CHAINLINK</i> by minimizing the negative of its score:</p><pre class="codeinput">  NUM = numel(R);   <span class="comment">% Number of nodes</span>
 
-    tic    <span class="comment">% Start timer</span>
+  objFunc = @(N) -chainlink(N, R, NUM);   <span class="comment">% Create function handle for GA</span>
 
-    <span class="comment">% Dump GA return values [ x, fval, exitFlag, output, population, scores ]:</span>
-    <span class="keyword">if</span> verbose == true
-        [ N, fval, ~, output, ~, ~ ] = ga(objFunc, 3 * NUM, options)
-    <span class="keyword">else</span>
-        [ N, fval, ~, ~, ~, ~ ] = ga(objFunc, 3 * NUM, options);
-    <span class="keyword">end</span>
+  tic  <span class="comment">% Start timer</span>
 
-    toc    <span class="comment">% Poll timer</span>
-</pre><pre class="codeoutput">Optimization terminated: average change in the fitness value less than options.TolFun.
-Elapsed time is 18.181856 seconds.
-</pre><h2>Processing the genetic algrithm output<a name="9"></a></h2><p>Reshape <i>N</i>(1, 3 * <i>NUM</i>) as <i>N</i>(<i>NUM</i>, 3), such that row vector <i>N</i>(<i>r</i>, :) = [ <i>Cx</i> <i>Cy</i> <i>Cz</i> ]</p><pre class="codeinput">    <span class="comment">% Workaround for MATLAB's column-major matrix policy:</span>
-	N = reshape(N, 3, NUM)';
-</pre><p>Return the negative of <i>fval</i> as the positive volume of the polyhedron enclosed by <i>N</i>:</p><pre class="codeinput">    V = -fval;
-</pre><p>Calculate and map the separation between each pair of nodes.</p><pre class="codeinput">    sep = zeros(NUM, NUM);
+  <span class="comment">% Dump GA return values [ x, fval, exitFlag, output, population, scores ]:</span>
+  <span class="keyword">if</span> verbose == true
+    [ N, ~, ~, ~, ~, ~ ] = ga(objFunc, 3 * NUM, options)
+  <span class="keyword">else</span>
+    [ N, ~, ~, ~, ~, ~ ] = ga(objFunc, 3 * NUM, options);
+  <span class="keyword">end</span>
+
+  toc  <span class="comment">% Poll timer</span>
+</pre><pre class="codeoutput">
+                               Best           Mean      Stall
+Generation      f-count        f(x)           f(x)    Generations
+    1           400           -1061          -20.96        0
+    2           600           -1061          -72.32        1
+    3           800           -2007           153.4        0
+    4          1000           -4023             526        0
+    5          1200           -4298            3043        0
+    6          1400           -4776            2588        0
+    7          1600           -4776            5760        1
+    8          1800           -7084            5544        0
+    9          2000           -7084        1.18e+04        1
+   10          2200           -7084       1.564e+04        2
+   11          2400           -8378       1.154e+04        0
+   12          2600           -8616       1.685e+04        0
+   13          2800           -8616       1.263e+04        1
+   14          3000           -9953       1.651e+04        0
+   15          3200      -1.237e+04       1.828e+04        0
+   16          3400      -1.237e+04       2.883e+04        1
+   17          3600      -1.253e+04       2.848e+04        0
+   18          3800      -1.253e+04       2.883e+04        1
+   19          4000      -1.253e+04       3.313e+04        2
+   20          4200      -1.265e+04       4.326e+04        0
+   21          4400      -1.308e+04       5.758e+04        0
+   22          4600      -1.313e+04       5.644e+04        0
+   23          4800      -1.314e+04       6.225e+04        0
+   24          5000      -1.365e+04       4.716e+04        0
+   25          5200      -1.365e+04       4.643e+04        1
+   26          5400      -1.365e+04        4.35e+04        2
+   27          5600      -1.392e+04       4.675e+04        0
+   28          5800      -1.402e+04       3.665e+04        0
+   29          6000      -1.417e+04       3.066e+04        0
+   30          6200      -1.418e+04       4.261e+04        0
+
+                               Best           Mean      Stall
+Generation      f-count        f(x)           f(x)    Generations
+   31          6400      -1.449e+04       4.451e+04        0
+   32          6600      -1.449e+04       4.002e+04        1
+   33          6800       -1.46e+04       4.169e+04        0
+   34          7000      -1.467e+04       5.068e+04        0
+   35          7200      -1.479e+04       5.136e+04        0
+   36          7400      -1.479e+04       4.878e+04        1
+   37          7600      -1.479e+04       4.843e+04        2
+   38          7800      -1.483e+04       5.607e+04        0
+   39          8000      -1.488e+04       7.669e+04        0
+   40          8200      -1.488e+04       5.834e+04        1
+   41          8400      -1.488e+04       7.044e+04        0
+   42          8600      -1.493e+04       5.746e+04        0
+   43          8800      -1.493e+04       4.627e+04        0
+   44          9000      -1.493e+04       4.772e+04        1
+   45          9200      -1.493e+04       5.356e+04        0
+   46          9400      -1.493e+04       6.075e+04        1
+   47          9600      -1.493e+04       6.808e+04        2
+   48          9800      -1.493e+04       6.482e+04        3
+   49         10000      -1.496e+04       5.791e+04        0
+   50         10200      -1.496e+04       5.182e+04        1
+   51         10400      -1.504e+04       5.477e+04        0
+   52         10600      -1.504e+04       5.498e+04        1
+   53         10800      -1.508e+04       3.996e+04        0
+   54         11000      -1.508e+04       4.847e+04        1
+   55         11200      -1.508e+04        5.97e+04        2
+   56         11400      -1.508e+04        7.35e+04        3
+   57         11600      -1.508e+04       7.351e+04        4
+   58         11800      -1.508e+04       6.305e+04        5
+   59         12000      -1.513e+04        8.42e+04        0
+   60         12200      -1.513e+04        8.01e+04        1
+
+                               Best           Mean      Stall
+Generation      f-count        f(x)           f(x)    Generations
+   61         12400      -1.513e+04       6.104e+04        0
+   62         12600      -1.513e+04       5.358e+04        1
+   63         12800      -1.513e+04       6.243e+04        2
+   64         13000      -1.513e+04       5.113e+04        3
+   65         13200      -1.513e+04       4.059e+04        4
+   66         13400      -1.513e+04       4.657e+04        5
+   67         13600      -1.513e+04       4.564e+04        6
+   68         13800      -1.513e+04       4.335e+04        7
+   69         14000      -1.513e+04       5.377e+04        8
+   70         14200      -1.516e+04       5.267e+04        0
+   71         14400      -1.516e+04       5.294e+04        1
+   72         14600      -1.516e+04       5.745e+04        2
+   73         14800      -1.516e+04       6.892e+04        3
+   74         15000      -1.516e+04       5.308e+04        4
+   75         15200      -1.516e+04       5.112e+04        5
+   76         15400      -1.516e+04        5.21e+04        6
+   77         15600      -1.516e+04       5.775e+04        7
+   78         15800      -1.516e+04       5.844e+04        8
+   79         16000      -1.516e+04       5.357e+04        9
+   80         16200      -1.516e+04           6e+04       10
+   81         16400      -1.516e+04       5.582e+04       11
+   82         16600      -1.516e+04       4.574e+04       12
+   83         16800      -1.516e+04       4.097e+04       13
+   84         17000      -1.516e+04       5.209e+04       14
+   85         17200      -1.516e+04       4.707e+04       15
+   86         17400      -1.516e+04       3.449e+04       16
+   87         17600      -1.516e+04       4.152e+04       17
+   88         17800      -1.516e+04       3.953e+04       18
+   89         18000      -1.516e+04       3.902e+04       19
+   90         18200      -1.516e+04       5.061e+04       20
+
+                               Best           Mean      Stall
+Generation      f-count        f(x)           f(x)    Generations
+   91         18400      -1.516e+04       5.423e+04       21
+   92         18600      -1.516e+04       5.434e+04       22
+   93         18800      -1.516e+04       5.036e+04       23
+   94         19000      -1.516e+04       5.335e+04       24
+   95         19200      -1.516e+04       4.957e+04       25
+   96         19400      -1.516e+04       4.288e+04       26
+   97         19600      -1.516e+04       4.706e+04       27
+   98         19800      -1.516e+04       4.944e+04       28
+   99         20000      -1.516e+04       5.043e+04       29
+  100         20200      -1.516e+04       4.217e+04       30
+  101         20400      -1.516e+04       4.504e+04       31
+  102         20600      -1.516e+04       4.094e+04       32
+  103         20800      -1.516e+04       3.384e+04       33
+  104         21000      -1.516e+04       4.816e+04       34
+  105         21200      -1.516e+04       5.694e+04       35
+  106         21400      -1.516e+04       4.707e+04       36
+  107         21600      -1.516e+04       4.538e+04       37
+  108         21800      -1.516e+04       4.378e+04       38
+  109         22000      -1.516e+04       5.087e+04       39
+Optimization terminated: average change in the fitness value less than options.TolFun.
+N =
+  Columns 1 through 7
+   11.9289  -13.1240    9.4272   18.0516   19.3170   -2.1702   27.2209
+  Columns 8 through 12
+  -25.9486  -32.0166  -39.3285   -8.7900  -15.0803
+Elapsed time is 18.046734 seconds.
+</pre><img vspace="5" hspace="5" src="stretch_chainlink_01.png" alt=""> <h2>Processing the genetic algrithm output<a name="13"></a></h2><p>Reshape <i>N</i>(1, 3 * <i>NUM</i>) as <i>N</i>(<i>NUM</i>, 3), such that row vector <i>N</i>(<i>i</i>, :) = [ <i>Cx</i> <i>Cy</i> <i>Cz</i> ]</p><pre class="codeinput">  <span class="comment">% Workaround for MATLAB's column-major matrix policy:</span>
+  N = reshape(N, 3, NUM)';
+</pre><p>Calculate and map the separation between each pair of nodes:</p><pre class="codeinput">  <span class="keyword">if</span> verbose == true
+    sep = zeros(NUM, NUM);
 
     <span class="keyword">for</span> i = 1 : NUM - 1
-        <span class="keyword">for</span> j = i + 1 : NUM
-            sep(i,j) = norm(N(i,:) - N(j,:));
-        <span class="keyword">end</span>
+      <span class="keyword">for</span> j = i + 1 : NUM
+        sep(i,j) = norm(N(i,:) - N(j,:));
+      <span class="keyword">end</span>
     <span class="keyword">end</span>
 
-    labels = cell(1, NUM);	<span class="comment">% Row and column headers</span>
+    labels = cell(1, NUM);  <span class="comment">% Row and column headers</span>
 
     <span class="keyword">for</span> i = 1 : NUM
-        labels{i} = strcat(<span class="string">'Node'</span>, num2str(i));
+      labels{i} = strcat(<span class="string">'Node'</span>, num2str(i));
     <span class="keyword">end</span>
-</pre><p>Display the Euclidean distances between each pair of nodes in a tabular format.</p><pre class="codeinput">    <span class="keyword">if</span> verbose == true
-        sep = array2table(sep', <span class="string">'VariableNames'</span>, labels, <span class="string">'RowNames'</span>, labels)
-    <span class="keyword">else</span>
-        sep = array2table(sep', <span class="string">'VariableNames'</span>, labels, <span class="string">'RowNames'</span>, labels);
-    <span class="keyword">end</span>
-</pre><h2>Displaying the 3D representation of the solution<a name="13"></a></h2><pre class="codeinput">    title = [ <span class="string">'Node configuration optimized for coverage volume'</span>, <span class="keyword">...</span>
-              <span class="string">', NUM: '</span>, num2str(NUM) ];
-    figure(<span class="string">'Name'</span>, title, <span class="string">'NumberTitle'</span>, <span class="string">'on'</span>);
-</pre><img vspace="5" hspace="5" src="stretch_chainlink_01.png" alt=""> <p>Show the scatter plot of the optimized node configuration:</p><pre class="codeinput">    scatter3(N(:,1), N(:,2), N(:,3), <span class="string">'.'</span>);
 
-    <span class="comment">% Node coverage envelope colours</span>
-    edgeGreen = [0.8 1 0.8];
-    faceGreen = [0 0.9 0];
-</pre><img vspace="5" hspace="5" src="stretch_chainlink_02.png" alt=""> <p>Display translucent spheres depicting the coverage volume of each node.</p><pre class="codeinput">    <span class="keyword">for</span> i = 1 : NUM
-        r = R(i);
-        [ x, y, z ] = sphere(16);
-        x = x * r + N(i,1);
-        y = y * r + N(i,2);
-        z = z * r + N(i,3);
+    sep = array2table(sep', <span class="string">'VariableNames'</span>, labels, <span class="string">'RowNames'</span>, labels)
+  <span class="keyword">end</span>
+</pre><pre class="codeoutput">sep = 
+             Node1     Node2     Node3     Node4
+             ______    ______    ______    _____
+    Node1         0         0         0    0    
+    Node2    34.992         0         0    0    
+    Node3    45.999     54.99         0    0    
+    Node4     56.98    65.185    70.782    0    
+</pre><h2>Displaying the 3D representation of the solution<a name="15"></a></h2><pre class="codeinput">  figTitle = [ <span class="string">'Node configuration optimized for coverage volume'</span>, <span class="keyword">...</span>
+               <span class="string">', NUM: '</span>, num2str(NUM) ];
+  figure(<span class="string">'Name'</span>, figTitle, <span class="string">'NumberTitle'</span>, <span class="string">'on'</span>);
+</pre><img vspace="5" hspace="5" src="stretch_chainlink_02.png" alt=""> <p>Use Delaunay triangulation to create and display the tetrahedral mesh for the polyhedral volume enclosed by the node configuration:</p><pre class="codeinput">  DT = delaunayTriangulation(N);
+  [ ~, V ] = convexHull(DT);
 
-        surface(x, y, z, <span class="keyword">...</span>
-                <span class="string">'EdgeColor'</span>, edgeGreen, <span class="keyword">...</span>
-                <span class="string">'FaceColor'</span>, faceGreen, <span class="keyword">...</span>
-                <span class="string">'FaceAlpha'</span>, 0.1 <span class="keyword">...</span>
-               );
+  <span class="comment">% Plot colours</span>
+  meshRed = [ 0.666 0 0 ];
+  faceOrange = [ 1 0.9 0.7 ];
+  green = [ 0.5 1 0.5 ];
+</pre><p>1. Display the polyhedral volume enclosed by <i>N</i>:</p><pre class="codeinput">  subplot(1, 2, 1);
+  scatter3(N(:,1), N(:,2), N(:,3), <span class="string">'.'</span>);
+  hold <span class="string">on</span>;  <span class="comment">% Continue with current figure</span>
+  tetramesh( <span class="keyword">...</span>
+            DT, <span class="keyword">...</span>
+            <span class="string">'EdgeColor'</span>, meshRed, <span class="keyword">...</span>
+            <span class="string">'FaceColor'</span>, faceOrange <span class="keyword">...</span>
+           );
+  title(<span class="string">'Node polyhedron'</span>);
+  xlabel(<span class="string">'X'</span>);
+  ylabel(<span class="string">'Y'</span>);
+  zlabel(<span class="string">'Z'</span>);
+  axis <span class="string">equal</span>;
+  axis <span class="string">vis3d</span>;
+</pre><img vspace="5" hspace="5" src="stretch_chainlink_03.png" alt=""> <p>2. a) Display translucent spheres depicting  the coverage volume of each node:</p><pre class="codeinput">  subplot(1, 2, 2);
+  scatter3(N(:,1), N(:,2), N(:,3), <span class="string">'.'</span>);
+  hold <span class="string">on</span>;  <span class="comment">% Continue with current figure</span>
 
-        pause(0.1);     <span class="comment">% Pause 0.1 s after each sphere to simulate animation</span>
-    <span class="keyword">end</span>
-</pre><img vspace="5" hspace="5" src="stretch_chainlink_03.png" alt=""> <p>Use Delaunay triangulation to create and display the tetrahedral mesh for the polyhedral volume enclosed by the node configuration.</p><pre class="codeinput">    hold <span class="string">on</span>;	<span class="comment">% Continue with current figure</span>
+  <span class="keyword">for</span> i = 1 : NUM
+    r = R(i);
+    [ x, y, z ] = sphere(32);
+    x = x * r + N(i,1);
+    y = y * r + N(i,2);
+    z = z * r + N(i,3);
 
-    DT = delaunayTriangulation(N);
-    tetramesh(DT);
-</pre><img vspace="5" hspace="5" src="stretch_chainlink_04.png" alt=""> <h2>Returning a volume-optimized configuration for the given number of nodes<a name="17"></a></h2><pre class="codeinput"><span class="keyword">end</span>
+    surface( <span class="keyword">...</span>
+            x, y, z, <span class="keyword">...</span>
+            <span class="string">'EdgeColor'</span>, green, <span class="keyword">...</span>
+            <span class="string">'EdgeAlpha'</span>, 0.2, <span class="keyword">...</span>
+            <span class="string">'FaceColor'</span>, green, <span class="keyword">...</span>
+            <span class="string">'FaceAlpha'</span>, 0.1 <span class="keyword">...</span>
+           );
+  <span class="keyword">end</span>
+</pre><img vspace="5" hspace="5" src="stretch_chainlink_04.png" alt=""> <p>2. b) Display the polyhedral volume enclosed by <i>N</i>:</p><pre class="codeinput">  hold <span class="string">on</span>;
+  tetramesh( <span class="keyword">...</span>
+            DT, <span class="keyword">...</span>
+            <span class="string">'EdgeColor'</span>, meshRed, <span class="keyword">...</span>
+            <span class="string">'FaceColor'</span>, faceOrange <span class="keyword">...</span>
+           );
+  title(<span class="string">'Node coverages'</span>);
+  xlabel(<span class="string">'X'</span>);
+  ylabel(<span class="string">'Y'</span>);
+  zlabel(<span class="string">'Z'</span>);
+  axis <span class="string">equal</span>;
+  axis <span class="string">vis3d</span>;
+</pre><img vspace="5" hspace="5" src="stretch_chainlink_05.png" alt=""> <p>Return a volume-optimized configuration for the given number of nodes:</p><pre class="codeinput"><span class="keyword">end</span>
 </pre><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2014a</a><br></p></div><!--
 ##### SOURCE BEGIN #####
 %% STRETCH_CHAINLINK
-% Uses a vectorized genetic algorithm to optimize _CHAINLINK_.
+% Uses a vectorized genetic algorithm to optimize the node configuration
+% for the given base node coverage radii.
+%
+% Copyright 2014 Sidharth Iyer <246964@gmail.com>
+%
+% Examples:
+%
+%   STRETCH_CHAINLINK([ 12 23 34 45 ])
+%   Optimizes the node configuration for the given node radii in the vector.
+%
+%   STRETCH_CHAINLINK([ 12 23 34 45 ], true)
+%   Optimizes the node configuration in a verbose fashion.
+%
+% See also OPTIM_NODE_CONFIG, CHAINLINK, ATTENUATE
 
 %% Function signature
-function [ N, V ] = stretch_chainlink(R, NUM, verbose)
+function [ N, V ] = stretch_chainlink(R, verbose)
+
+%% Input
+% _R_: Vector of base node coverage radii
 %%
-% Input: Vector of base node coverage radii _R_, number of nodes _N_,
-% boolean flag _verbose_ to specify output verbosity.
+% _verbose_: Boolean flag to specify output verbosity
+
+%% Output
+% _N_(_NUM_, 3): Optimized node configuration such that
+% row vector _N_(_i_, :) = [ _Cx_ _Cy_ _Cz_ ]
 %%
-% Output: Optimized node configuration _N_(_NUM_, 3),
-% such that row vector _N_(_r_, :) = [ _Cx_ _Cy_ _Cz_ ],
-% polyhedral volume _V_ enclosed by _N_.
+% _V_: Polyhedral volume enclosed by _N_
 
-    %% Initializing constant data
-	% Set the initial population seeding range.
-    %%
-    % min(R) / sqrt(3) is a conservative setting, ensuring that the
-    % cubic diagonal of the initial population range will fit in the
-    % lowest coverage radius of all nodes.
+  %%
+  % Check for malformed arguments:
 
-    HALFRANGE = min(R) / (2 * sqrt(3));     % Center roughly around origin
+  argError = 'Malformed input arguments: Please refer to the source.';
 
-    %% Setting the genetic algorithm options
-    % _'PopInitRange'_ sets the initial population seeding range,
-    % within which the first generation is defined using _'CreationFcn'_.
-    %%
-    % _'Vectorized'_ specifies whether the GA is to be called with
-    % multiple individuals passed to it in each iteration or not.
+  switch nargin
+    case 1
+      verbose = false;
+    case 2
+      if ~islogical(verbose)
+        error(argError);
+      end
+    otherwise
+      error(argError);
+  end
 
-    % TODO: Set options optimally
-    oldopts = gaoptimset(@ga);      % Load default options explicitly
-    newopts = ...
-        struct( ...
+  %% Setting genetic algorithm options
+  % min(R) / sqrt(3) is a conservative setting, ensuring that
+  % the cubic diagonal of the initial population range will fit
+  % in the lowest coverage radius of all nodes.
+  %%
+  % _'TolFun'_ set the stopiing criterios based on
+  % the average change of fitness function return value.
+  %%
+  % _'PopInitRange'_ sets the initial population seeding range,
+  % within which the first generation is defined using _'CreationFcn'_.
+  %%
+  % _'Vectorized'_ specifies whether the GA is to be called with
+  % multiple individuals passed to it in each iteration or not.
+
+  HALFRANGE = min(R) / (2 * sqrt(3));     % Center roughly around origin
+
+  oldopts = gaoptimset(@ga);          % Load default options
+  newopts = ...
+    struct( ...
+            'TolFun',     1e-4, ...                         % { 1e-6 }
             'PopInitRange', [ -HALFRANGE; HALFRANGE ], ...  % { [ -10; 10 ] }
-            'PlotFcns',     { @gaplotbestf }, ...           % { [] }
+            'PlotFcns',   { @gaplotbestf }, ...             % { [] }
             'Vectorized',   'on' ...                        % { 'off' }
-              );
-    options = gaoptimset(oldopts, newopts);     % Overwrite selected parameters
+          );
+  options = gaoptimset(oldopts, newopts);   % Overwrite selected parameters
 
-    if verbose == true
-        options = gaoptimset(oldopts, 'Display', 'iter');
-    else
-        options = gaoptimset(oldopts, 'Display', 'final');
-    end
+  if verbose == true
+    options = gaoptimset(options, 'Display', 'iter');
+  else
+    options = gaoptimset(options, 'Display', 'final');
+  end
 
-    %% Invoking the genetic algorithm
-    % Maximize _CHAINLINK_ by minimizing the negative of its score:
-    objFunc = @(N) -chainlink(N, R, NUM);	% Create function handle for GA
+  %% Invoking the genetic algorithm
+  % Maximize _CHAINLINK_ by minimizing the negative of its score:
 
-    tic    % Start timer
+  NUM = numel(R);   % Number of nodes
 
-    % Dump GA return values [ x, fval, exitFlag, output, population, scores ]:
-    if verbose == true
-        [ N, fval, ~, output, ~, ~ ] = ga(objFunc, 3 * NUM, options)
-    else
-        [ N, fval, ~, ~, ~, ~ ] = ga(objFunc, 3 * NUM, options);
-    end
+  objFunc = @(N) -chainlink(N, R, NUM);   % Create function handle for GA
 
-    toc    % Poll timer
+  tic  % Start timer
 
-    %% Processing the genetic algrithm output
-    % Reshape _N_(1, 3 * _NUM_) as _N_(_NUM_, 3),
-    % such that row vector _N_(_r_, :) = [ _Cx_ _Cy_ _Cz_ ]
+  % Dump GA return values [ x, fval, exitFlag, output, population, scores ]:
+  if verbose == true
+    [ N, ~, ~, ~, ~, ~ ] = ga(objFunc, 3 * NUM, options)
+  else
+    [ N, ~, ~, ~, ~, ~ ] = ga(objFunc, 3 * NUM, options);
+  end
 
-    % Workaround for MATLAB's column-major matrix policy:
-	N = reshape(N, 3, NUM)';
+  toc  % Poll timer
 
-    %%
-    % Return the negative of _fval_ as the positive volume of the polyhedron
-    % enclosed by _N_:
-    V = -fval;
+  %% Processing the genetic algrithm output
+  % Reshape _N_(1, 3 * _NUM_) as _N_(_NUM_, 3),
+  % such that row vector _N_(_i_, :) = [ _Cx_ _Cy_ _Cz_ ]
 
-    %%
-    % Calculate and map the separation between each pair of nodes.
+  % Workaround for MATLAB's column-major matrix policy:
+  N = reshape(N, 3, NUM)';
 
+  %%
+  % Calculate and map the separation between each pair of nodes:
+
+  if verbose == true
     sep = zeros(NUM, NUM);
 
     for i = 1 : NUM - 1
-        for j = i + 1 : NUM
-            sep(i,j) = norm(N(i,:) - N(j,:));
-        end
+      for j = i + 1 : NUM
+        sep(i,j) = norm(N(i,:) - N(j,:));
+      end
     end
 
-    labels = cell(1, NUM);	% Row and column headers
+    labels = cell(1, NUM);  % Row and column headers
 
     for i = 1 : NUM
-        labels{i} = strcat('Node', num2str(i));
+      labels{i} = strcat('Node', num2str(i));
     end
 
-    %%
-    % Display the Euclidean distances between each pair of nodes
-    % in a tabular format.
+    sep = array2table(sep', 'VariableNames', labels, 'RowNames', labels)
+  end
 
-    if verbose == true
-        sep = array2table(sep', 'VariableNames', labels, 'RowNames', labels)
-    else
-        sep = array2table(sep', 'VariableNames', labels, 'RowNames', labels);
-    end
+  %% Displaying the 3D representation of the solution
 
-    %% Displaying the 3D representation of the solution
-    title = [ 'Node configuration optimized for coverage volume', ...
-              ', NUM: ', num2str(NUM) ];
-    figure('Name', title, 'NumberTitle', 'on');
+  figTitle = [ 'Node configuration optimized for coverage volume', ...
+               ', NUM: ', num2str(NUM) ];
+  figure('Name', figTitle, 'NumberTitle', 'on');
 
-    %%
-    % Show the scatter plot of the optimized node configuration:
-    scatter3(N(:,1), N(:,2), N(:,3), '.');
+  %%
+  % Use Delaunay triangulation to create and display the tetrahedral mesh
+  % for the polyhedral volume enclosed by the node configuration:
 
-    % Node coverage envelope colours
-    edgeGreen = [0.8 1 0.8];
-    faceGreen = [0 0.9 0];
+  DT = delaunayTriangulation(N);
+  [ ~, V ] = convexHull(DT);
 
-    %%
-    % Display translucent spheres depicting the coverage volume of each node.
+  % Plot colours
+  meshRed = [ 0.666 0 0 ];
+  faceOrange = [ 1 0.9 0.7 ];
+  green = [ 0.5 1 0.5 ];
 
-    for i = 1 : NUM
-        r = R(i);
-        [ x, y, z ] = sphere(16);
-        x = x * r + N(i,1);
-        y = y * r + N(i,2);
-        z = z * r + N(i,3);
+  %%
+  % 1. Display the polyhedral volume enclosed by _N_:
 
-        surface(x, y, z, ...
-                'EdgeColor', edgeGreen, ...
-                'FaceColor', faceGreen, ...
-                'FaceAlpha', 0.1 ...
-               );
+  subplot(1, 2, 1);
+  scatter3(N(:,1), N(:,2), N(:,3), '.');
+  hold on;  % Continue with current figure
+  tetramesh( ...
+            DT, ...
+            'EdgeColor', meshRed, ...
+            'FaceColor', faceOrange ...
+           );
+  title('Node polyhedron');
+  xlabel('X');
+  ylabel('Y');
+  zlabel('Z');
+  axis equal;
+  axis vis3d;
 
-        pause(0.1);     % Pause 0.1 s after each sphere to simulate animation
-    end
+  %%
+  % 2. a) Display translucent spheres depicting
+  %  the coverage volume of each node:
 
-    %%
-    % Use Delaunay triangulation to create and display the tetrahedral mesh
-    % for the polyhedral volume enclosed by the node configuration.
+  subplot(1, 2, 2);
+  scatter3(N(:,1), N(:,2), N(:,3), '.');
+  hold on;  % Continue with current figure
 
-    hold on;	% Continue with current figure
+  for i = 1 : NUM
+    r = R(i);
+    [ x, y, z ] = sphere(32);
+    x = x * r + N(i,1);
+    y = y * r + N(i,2);
+    z = z * r + N(i,3);
 
-    DT = delaunayTriangulation(N);
-    tetramesh(DT);
+    surface( ...
+            x, y, z, ...
+            'EdgeColor', green, ...
+            'EdgeAlpha', 0.2, ...
+            'FaceColor', green, ...
+            'FaceAlpha', 0.1 ...
+           );
+  end
 
-%% Returning a volume-optimized configuration for the given number of nodes
+  %%
+  % 2. b) Display the polyhedral volume enclosed by _N_:
+
+  hold on;
+  tetramesh( ...
+            DT, ...
+            'EdgeColor', meshRed, ...
+            'FaceColor', faceOrange ...
+           );
+  title('Node coverages');
+  xlabel('X');
+  ylabel('Y');
+  zlabel('Z');
+  axis equal;
+  axis vis3d;
+
+%%
+% Return a volume-optimized configuration for the given number of nodes:
+
 end
 
 ##### SOURCE END #####
