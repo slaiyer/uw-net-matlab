@@ -1,13 +1,13 @@
 %% CHAINLINK
 % Calculates the volume and separations for the given node configuration.
 %
-% Copyright 2014 Sidharth Iyer <246964@gmail.com>
+% Copyright 2014 Sidharth Iyer (246964@gmail.com)
 %
 % Examples:
 %
 %   Use OPTIM_NODE_CONFIG or STRETCH_CHAINLINK as the entry point.
 %
-% See also OPTIM_NODE_CONFIG, STRETCH_CHAINLINK, ATTENUATE
+% See also OPTIM_NODE_CONFIG, STRETCH_CHAINLINK, ATTENUATE, VIS_NODE_CONFIG
 
 %% Function signature
 function volume = chainlink(N, R, NUM)
@@ -36,7 +36,7 @@ function volume = chainlink(N, R, NUM)
   %% Iterating over each individual in the vectorized input
 
   for i = 1 : INDIVS
-  %{
+  %
     % For option 3:
     inferior = false;   % Flag for current individual's feasibility status
   %}
@@ -76,14 +76,15 @@ function volume = chainlink(N, R, NUM)
 
         %%
         % Return attenated ranges between the source and target nodes:
+        % range = attenuate(range, n, flipud(n));
         range = attenuate(range, n, flipud(n));
 
         %%
         % Calculate the separation between two adjacent vertices
         % and the total coverage along their common edge:
 
-        edge = norm(n(1,:) - n(2,:));         % Euclidean distance
-        coverage = range(1) + range(2);       % Sphere packing
+        edge = norm(n(1,:) - n(2,:));           % Euclidean distance
+        coverage = range(1) + range(2);         % Sphere packing
 
         % Ensure both nodes are in each other's range:
         % coverage = min(range(1), range(2));   % Two-way communication
@@ -101,7 +102,7 @@ function volume = chainlink(N, R, NUM)
           % Option 1: Split the gap in edge coverage between
           % the two nodes proportionately and calculate
           % the volume deficits, the sum of which is the penalty.
-        %
+        %{
           gap = minOverlap - overlap;
           deficit = range * gap / coverage;
           penalty = (range(1) + deficit(1)) ^ 3 - range(1) ^ 3 ...
@@ -120,7 +121,7 @@ function volume = chainlink(N, R, NUM)
           % Option 3: Reset the score to zero as soon as
           % the first edge gap is found, and deem
           % the current individual inferior.
-        %{
+        %
           volume(i) = 0;
 
           % Escape inferior individual's loop _(1/3)_:
@@ -129,12 +130,12 @@ function volume = chainlink(N, R, NUM)
         %}
         end
       end
-  %
+  %{
     % For options 1 and 2:
     end
   %}
 
-  %{
+  %
     % For option 3:
 
       % Escape inferior individual's loop _(2/3)_:

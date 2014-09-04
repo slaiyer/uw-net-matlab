@@ -2,7 +2,7 @@
 % Calculates the best volume-optimized node configuration
 % for the given base node coverage radii.
 %
-% Copyright 2014 Sidharth Iyer <246964@gmail.com>
+% Copyright 2014 Sidharth Iyer (246964@gmail.com)
 %
 % Examples:
 %
@@ -15,7 +15,7 @@
 %   OPTIM_NODE_CONFIG('test_radii.csv', 1, true)
 %   Finds 1 solution for the node radii in test_radii.csv in verbose fashion.
 %
-% See also STRETCH_CHAINLINK, CHAINLINK, ATTENUATE
+% See also STRETCH_CHAINLINK, CHAINLINK, ATTENUATE, VIS_NODE_CONFIG
 
 %% Function signature
 function bestN = optim_node_config(inCSV, iters, verbose)
@@ -23,10 +23,10 @@ function bestN = optim_node_config(inCSV, iters, verbose)
 %% Input
 % _inCSV_: Comma-separated file with base node coverage radii
 %%
-% _iters_: Number of initial population iterations of the genetic algorithm
-% to seed to select the best solution from
+% _iters_: (Optional) Number of initial population iterations of
+% the genetic algorithm to seed to select the best solution from
 %%
-% _verbose_: Boolean flag to specify output verbosity
+% _verbose_: (Optional) Boolean flag to specify output verbosity
 
 %% Output
 % _bestN_(_NUM_, 3): Best node configuration such that
@@ -41,7 +41,7 @@ function bestN = optim_node_config(inCSV, iters, verbose)
   % and is interpreted with ghost zeros,
   % remove all commas from the end of each line.
 
-  argError = 'Malformed input arguments: Please refer to the source.';
+  argError = 'Malformed input arguments. Use "help optim_node_config".';
 
   switch nargin
     case 1
@@ -68,6 +68,13 @@ function bestN = optim_node_config(inCSV, iters, verbose)
   % _R_(1, :) = [ _R1_ ... _R<NUM>_ ]
 
   R = csvread(inCSV);
+
+  if verbose == true
+    % Clean slate if good to go:
+    close all;
+    clc;
+  end
+
   NUM = numel(R);   % Number of nodes
 
   if size(R, 1) > 1
@@ -83,6 +90,10 @@ function bestN = optim_node_config(inCSV, iters, verbose)
   V = zeros(iters, 1);        % Volumes of each incoming node configuration
 
   for i = 1 : iters
+    if verbose == false
+      fprintf('Running GA iteration:\t%d/%d... ', i, iters);
+    end
+
     [ N(:,:,i), V(i) ] = stretch_chainlink(R, verbose);
   end
 
@@ -97,15 +108,14 @@ function bestN = optim_node_config(inCSV, iters, verbose)
   % Display sorted solutions if verbosity is required:
 
   if verbose == true
-    V
-    N
-  end
+    display(V);
+    display(N);
 
-  %%
-  % Display the ranks of each iteration:
-
-  if iters > 1
-    order
+    if iters > 1
+      display(order);               % Display iteration rankings
+    end
+  else
+    vis_node_config(N(:,:,1), R);   % Visualize best solution
   end
 
   %% Saving the output to files
