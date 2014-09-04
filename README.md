@@ -34,3 +34,13 @@ optim_node_config('test_radii.csv', 4, true)
 **Documentation:**
 
 * MATLAB-generated documentation from the source code is in the **html** directory.
+
+* Use one of the following at the command line:
+
+    * `help optim_node_config`
+
+    * `help stretch_chainlink`
+
+    * `help chainlink`
+
+    * `help attenuate`
