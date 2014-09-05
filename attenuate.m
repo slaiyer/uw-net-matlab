@@ -8,7 +8,7 @@
 %
 %   Use OPTIM_NODE_CONFIG or STRETCH_CHAINLINK as the entry point.
 %
-% See also OPTIM_NODE_CONFIG, STRETCH_CHAINLINK, CHAINLINK, VIS_NODE_CONFIG
+% See also OPTIM_NODE_CONFIG, STRETCH_CHAINLINK, CHAINLINK, NODE_CONFIG_VOL
 
 %% Function signature
 function range = attenuate(R, S, T)

@@ -15,7 +15,7 @@
 %   OPTIM_NODE_CONFIG('test_radii.csv', 1, true)
 %   Finds 1 solution for the node radii in test_radii.csv in verbose fashion.
 %
-% See also STRETCH_CHAINLINK, CHAINLINK, ATTENUATE, VIS_NODE_CONFIG
+% See also STRETCH_CHAINLINK, CHAINLINK, ATTENUATE, NODE_CONFIG_VOL
 
 %% Function signature
 function bestN = optim_node_config(inCSV, iters, verbose)
@@ -101,8 +101,8 @@ function bestN = optim_node_config(inCSV, iters, verbose)
   % Sort node configurations based on the descending order of
   % the polyhedral volume enclosed by each:
 
-  [ V, order ] = sort(V, 'descend');
-  N = N(:,:,order);
+  [ V, rank ] = sort(V, 'descend');
+  N = N(:,:,rank);
 
   %%
   % Display sorted solutions if verbosity is required:
@@ -112,10 +112,11 @@ function bestN = optim_node_config(inCSV, iters, verbose)
     display(N);
 
     if iters > 1
-      display(order);               % Display iteration rankings
+      fprintf('Iteration-wise ');
+      display(rank);  % Display iteration rankings
     end
   else
-    vis_node_config(N(:,:,1), R);   % Visualize best solution
+    node_config_vol(N(:,:,1), R, verbose);  % Visualize best solution only
   end
 
   %% Saving the output to files

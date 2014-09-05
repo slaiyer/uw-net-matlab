@@ -12,7 +12,7 @@
 %   STRETCH_CHAINLINK([ 12 23 34 45 ], true)
 %   Optimizes the node configuration in a verbose fashion.
 %
-% See also OPTIM_NODE_CONFIG, CHAINLINK, ATTENUATE, VIS_NODE_CONFIG
+% See also OPTIM_NODE_CONFIG, CHAINLINK, ATTENUATE, NODE_CONFIG_VOL
 
 %% Function signature
 function [ N, V ] = stretch_chainlink(R, verbose)
@@ -112,23 +112,29 @@ function [ N, V ] = stretch_chainlink(R, verbose)
     end
 
     labels = cell(1, NUM);  % Row and column headers
+    units = cell(1, NUM);   % Distance units
 
     for i = 1 : NUM
       labels{i} = strcat('Node', num2str(i));
+      units{i} = 'm';
     end
 
     sep = array2table( ...
-                      sep(1 : NUM - 1, 2 : NUM), ...
-                      'RowNames', labels(1 : NUM - 1), ...
-                      'VariableNames', labels(2 : NUM) ...
+                      sep(1 : NUM - 1, 2 : NUM)', ...
+                      'RowNames', labels(2 : NUM), ...
+                      'VariableNames', labels(1 : NUM - 1) ...
                      );
+
+    sep.Properties.Description ...
+      = 'Maps the Euclidean distances between each pair of nodes in 3D';
+    sep.Properties.VariableUnits = units(1 : NUM - 1);
 
     display(sep);
   end
 
   %%
-  % Plot the given node configuration in 3D.
-  V = vis_node_config(N, R, verbose);
+  % Calculate the node polyhedron volume and plot it in 3D:
+  V = node_config_vol(N, R, verbose);
 
 %%
 % Return a volume-optimized configuration for the given number of nodes:

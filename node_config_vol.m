@@ -1,5 +1,6 @@
-%% VIS_NODE_CONFIG
-% Visualize the given node configuration in 3D.
+%% NODE_CONFIG_VOL
+% Calculate the volume of the polyhedron formed by the given node configuration
+% and optionally visualize it in 3D.
 %
 % Copyright 2014 Sidharth Iyer (246964@gmail.com)
 %
@@ -10,7 +11,7 @@
 % See also OPTIM_NODE_CONFIG, STRETCH_CHAINLINK, CHAINLINK, ATTENUATE
 
 %% Function signature
-function V = vis_node_config(N, R, verbose)
+function V = node_config_vol(N, R, verbose)
 
 %% Input
 % _N_(_NUM_, 3): Optimized node configuration such that
@@ -30,7 +31,7 @@ function V = vis_node_config(N, R, verbose)
 
   switch nargin
     case 2
-      verbose = true;
+      verbose = false;
     case 3
       if ~islogical(verbose)
         error(argError);
