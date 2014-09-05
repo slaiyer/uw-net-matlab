@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>ATTENUATE</title><meta name="generator" content="MATLAB 8.3"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2014-09-04"><meta name="DC.source" content="attenuate.m"><style type="text/css">
+      --><title>ATTENUATE</title><meta name="generator" content="MATLAB 8.3"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2014-09-05"><meta name="DC.source" content="attenuate.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -66,14 +66,24 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style></head><body><div class="content"><h1>ATTENUATE</h1><!--introduction--><p>Calculates and applies directional attenuation to the coverage ranges of the given sources.</p><p>Copyright 2014 Sidharth Iyer <a href="246964@gmail.com">246964@gmail.com</a></p><p>Examples:</p><pre class="language-matlab">Use <span class="string">OPTIM_NODE_CONFIG</span> <span class="string">or</span> <span class="string">STRETCH_CHAINLINK</span> <span class="string">as</span> <span class="string">the</span> <span class="string">entry</span> <span class="string">point.</span>
-</pre><p>See also OPTIM_NODE_CONFIG, STRETCH_CHAINLINK, CHAINLINK</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Function signature</a></li><li><a href="#3">Input</a></li><li><a href="#6">Output</a></li><li><a href="#7">Pseudocode</a></li></ul></div><h2>Function signature<a name="1"></a></h2><pre class="codeinput"><span class="keyword">function</span> range = attenuate(R, S, T)
-</pre><h2>Input<a name="3"></a></h2><p><i>R</i>: Column vector of base node coverage radii</p><p><i>S</i>: Vectorized array of source node coordinates such that <i>S</i>(<i>i</i>, :) = [ <i>Cx</i> <i>Cy</i> <i>Cz</i> ]</p><p><i>T</i>: Vectorized array of target node coordinates such that <i>T</i>(<i>i</i>, :) = [ <i>Cx</i> <i>Cy</i> <i>Cz</i> ]</p><h2>Output<a name="6"></a></h2><p><i>range</i>: Column vector of attenuated ranges in the target directions</p><h2>Pseudocode<a name="7"></a></h2><pre class="codeinput"><span class="comment">% Iterate row-wise over input arrays</span>
-<span class="comment">%   Calculate unit vector UV(i) from S(i) to T(i)</span>
-<span class="comment">%   Use data sets to integrate attenuation factor along UV(i)</span>
-<span class="comment">%   Apply attenuation factor to R(i) and save as range(i)</span>
-<span class="comment">% Return range(:)</span>
-</pre><p>Return the attenuated ranges for the given sources:</p><pre class="codeinput">  range = R;  <span class="comment">% Dummy return value for stub</span>
+  </style></head><body><div class="content"><h1>ATTENUATE</h1><!--introduction--><p>Calculates and applies directional attenuation to the coverage ranges of the given sources.</p><p>Examples:</p><pre class="language-matlab">Use <span class="string">OPTIM_NODE_CONFIG</span> <span class="string">or</span> <span class="string">STRETCH_CHAINLINK</span> <span class="string">as</span> <span class="string">the</span> <span class="string">entry</span> <span class="string">point.</span>
+</pre><p>See also OPTIM_NODE_CONFIG, STRETCH_CHAINLINK, CHAINLINK, NODE_CONFIG_VOL</p><p>Copyright 2014 Sidharth Iyer (<a href="mailto:246964@gmail.com">246964@gmail.com</a>)</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Function signature</a></li><li><a href="#3">Input</a></li><li><a href="#6">Output</a></li><li><a href="#7">Pseudocode</a></li></ul></div><h2>Function signature<a name="1"></a></h2><pre class="codeinput"><span class="keyword">function</span> range = attenuate(R, S, T)
+</pre><h2>Input<a name="3"></a></h2><p><i>R</i>: Column vector of base node coverage radii</p><p><i>S</i>: Vectorized array of source node coordinates such that <i>S</i>(<i>i</i>, :) = [ <i>Cx</i> <i>Cy</i> <i>Cz</i> ]</p><p><i>T</i>: Vectorized array of target node coordinates such that <i>T</i>(<i>i</i>, :) = [ <i>Cx</i> <i>Cy</i> <i>Cz</i> ]</p><h2>Output<a name="6"></a></h2><p><i>range</i>: Column vector of attenuated ranges in the target directions</p><h2>Pseudocode<a name="7"></a></h2><pre class="codeinput">  <span class="comment">% Iterate row-wise over input arrays</span>
+  <span class="comment">%   Calculate unit vector UV(i) from S(i) to T(i)</span>
+  <span class="comment">%   Use data sets to integrate attenuation factor along UV(i)</span>
+  <span class="comment">%   Apply attenuation factor to R(i) and save as range(i)</span>
+  <span class="comment">% Return range(:)</span>
+
+  <span class="comment">% Dummy calculations for stub:</span>
+  NUM = numel(R);
+  SV = zeros(NUM, 1);
+  TV = zeros(NUM, 1);
+
+  <span class="keyword">for</span> i = 1 : NUM
+    SV(i) = sum(S(i,:)) * 0;
+    TV(i) = sum(T(i,:)) * 0;
+  <span class="keyword">end</span>
+</pre><p>Return the attenuated ranges for the given sources:</p><pre class="codeinput">  range = R + SV + TV;  <span class="comment">% Dummy return value for stub</span>
 </pre><pre class="codeinput"><span class="keyword">end</span>
 </pre><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2014a</a><br></p></div><!--
 ##### SOURCE BEGIN #####
@@ -81,15 +91,16 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 % Calculates and applies directional attenuation
 % to the coverage ranges of the given sources.
 %
-% Copyright 2014 Sidharth Iyer <246964@gmail.com>
-%
 % Examples:
 %
 %   Use OPTIM_NODE_CONFIG or STRETCH_CHAINLINK as the entry point.
 %
-% See also OPTIM_NODE_CONFIG, STRETCH_CHAINLINK, CHAINLINK
+% See also OPTIM_NODE_CONFIG, STRETCH_CHAINLINK, CHAINLINK, NODE_CONFIG_VOL
+%
+% Copyright 2014 Sidharth Iyer (246964@gmail.com)
 
 %% Function signature
+
 function range = attenuate(R, S, T)
 
 %% Input
@@ -104,17 +115,27 @@ function range = attenuate(R, S, T)
 %% Output
 % _range_: Column vector of attenuated ranges in the target directions
 
-%% Pseudocode
+  %% Pseudocode
 
-% Iterate row-wise over input arrays
-%   Calculate unit vector UV(i) from S(i) to T(i)
-%   Use data sets to integrate attenuation factor along UV(i)
-%   Apply attenuation factor to R(i) and save as range(i)
-% Return range(:)
+  % Iterate row-wise over input arrays
+  %   Calculate unit vector UV(i) from S(i) to T(i)
+  %   Use data sets to integrate attenuation factor along UV(i)
+  %   Apply attenuation factor to R(i) and save as range(i)
+  % Return range(:)
 
-%%
-% Return the attenuated ranges for the given sources:
-  range = R;  % Dummy return value for stub
+  % Dummy calculations for stub:
+  NUM = numel(R);
+  SV = zeros(NUM, 1);
+  TV = zeros(NUM, 1);
+
+  for i = 1 : NUM
+    SV(i) = sum(S(i,:)) * 0;
+    TV(i) = sum(T(i,:)) * 0;
+  end
+
+  %%
+  % Return the attenuated ranges for the given sources:
+  range = R + SV + TV;  % Dummy return value for stub
 
 end
 

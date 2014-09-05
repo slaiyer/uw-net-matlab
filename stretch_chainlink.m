@@ -2,8 +2,6 @@
 % Uses a vectorized genetic algorithm to optimize the node configuration
 % for the given base node coverage radii.
 %
-% Copyright 2014 Sidharth Iyer (246964@gmail.com)
-%
 % Examples:
 %
 %   STRETCH_CHAINLINK([ 12 23 34 45 ])
@@ -12,9 +10,12 @@
 %   STRETCH_CHAINLINK([ 12 23 34 45 ], true)
 %   Optimizes the node configuration in a verbose fashion.
 %
-% See also OPTIM_NODE_CONFIG, CHAINLINK, ATTENUATE, NODE_CONFIG_VOL
+% See also: OPTIM_NODE_CONFIG, CHAINLINK, ATTENUATE, NODE_CONFIG_VOL
+%
+% Copyright 2014 Sidharth Iyer (246964@gmail.com)
 
 %% Function signature
+
 function [ N, V ] = stretch_chainlink(R, verbose)
 
 %% Input

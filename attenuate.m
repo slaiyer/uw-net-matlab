@@ -2,15 +2,16 @@
 % Calculates and applies directional attenuation
 % to the coverage ranges of the given sources.
 %
-% Copyright 2014 Sidharth Iyer (246964@gmail.com)
-%
 % Examples:
 %
 %   Use OPTIM_NODE_CONFIG or STRETCH_CHAINLINK as the entry point.
 %
 % See also OPTIM_NODE_CONFIG, STRETCH_CHAINLINK, CHAINLINK, NODE_CONFIG_VOL
+%
+% Copyright 2014 Sidharth Iyer (246964@gmail.com)
 
 %% Function signature
+
 function range = attenuate(R, S, T)
 
 %% Input

@@ -1,16 +1,17 @@
 %% NODE_CONFIG_VOL
-% Calculate the volume of the polyhedron formed by the given node configuration
-% and optionally visualize it in 3D.
-%
-% Copyright 2014 Sidharth Iyer (246964@gmail.com)
+% Calculate the volume of the polyhedron formed by
+% the given node configuration and optionally visualize it in 3D.
 %
 % Examples:
 %
 %   Use OPTIM_NODE_CONFIG or STRETCH_CHAINLINK as the entry point.
 %
-% See also OPTIM_NODE_CONFIG, STRETCH_CHAINLINK, CHAINLINK, ATTENUATE
+% See also: OPTIM_NODE_CONFIG, STRETCH_CHAINLINK, CHAINLINK, ATTENUATE
+%
+% Copyright 2014 Sidharth Iyer (246964@gmail.com)
 
 %% Function signature
+
 function V = node_config_vol(N, R, verbose)
 
 %% Input
@@ -41,8 +42,8 @@ function V = node_config_vol(N, R, verbose)
   end
 
   %%
-  % Use Delaunay triangulation to create and display the tetrahedral mesh
-  % for the polyhedral volume enclosed by the node configuration:
+  % Use Delaunay triangulation to create and display the tetrahedral
+  % mesh for the polyhedral volume enclosed by the node configuration:
 
   DT = delaunayTriangulation(N);
   [ ~, V ] = convexHull(DT);

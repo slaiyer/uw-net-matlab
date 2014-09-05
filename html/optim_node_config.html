@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>OPTIM_NODE_CONFIG</title><meta name="generator" content="MATLAB 8.3"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2014-09-04"><meta name="DC.source" content="optim_node_config.m"><style type="text/css">
+      --><title>OPTIM_NODE_CONFIG</title><meta name="generator" content="MATLAB 8.3"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2014-09-05"><meta name="DC.source" content="optim_node_config.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -66,14 +66,14 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style></head><body><div class="content"><h1>OPTIM_NODE_CONFIG</h1><!--introduction--><p>Calculates the best volume-optimized node configuration for the given base node coverage radii.</p><p>Copyright 2014 Sidharth Iyer <a href="246964@gmail.com">246964@gmail.com</a></p><p>Examples:</p><pre class="language-matlab">OPTIM_NODE_CONFIG(<span class="string">'test_radii.csv'</span>)
+  </style></head><body><div class="content"><h1>OPTIM_NODE_CONFIG</h1><!--introduction--><p>Calculates the best volume-optimized node configuration for the given base node coverage radii.</p><p>Examples:</p><pre class="language-matlab">OPTIM_NODE_CONFIG(<span class="string">'test_radii.csv'</span>)
 Optimizes <span class="string">the</span> <span class="string">node</span> <span class="string">configuration</span> <span class="string">for</span> <span class="string">the</span> <span class="string">node</span> <span class="string">radii</span> <span class="string">in</span> <span class="string">test_radii.csv</span>
 </pre><pre class="language-matlab">OPTIM_NODE_CONFIG(<span class="string">'test_radii.csv'</span>, 3)
 Finds <span class="string">the</span> <span class="string">best</span> <span class="string">of</span> <span class="string">3</span> <span class="string">solutions</span> <span class="string">for</span> <span class="string">the</span> <span class="string">node</span> <span class="string">radii</span> <span class="string">in</span> <span class="string">test_radii.csv</span>
 </pre><pre class="language-matlab">OPTIM_NODE_CONFIG(<span class="string">'test_radii.csv'</span>, 1, true)
 Finds <span class="string">1</span> <span class="string">solution</span> <span class="string">for</span> <span class="string">the</span> <span class="string">node</span> <span class="string">radii</span> <span class="string">in</span> <span class="string">test_radii.csv</span> <span class="string">in</span> <span class="string">verbose</span> <span class="string">fashion.</span>
-</pre><p>See also STRETCH_CHAINLINK, CHAINLINK, ATTENUATE</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Function signature</a></li><li><a href="#3">Input</a></li><li><a href="#6">Output</a></li><li><a href="#7">Checking for malformed arguments</a></li><li><a href="#9">Input parsing and reformatting</a></li><li><a href="#10">Calling <i>STRETCH_CHAINLINK</i> multiple times</a></li><li><a href="#11">Sorting solutions based on optimality</a></li><li><a href="#14">Saving the output to files</a></li></ul></div><h2>Function signature<a name="1"></a></h2><pre class="codeinput"><span class="keyword">function</span> bestN = optim_node_config(inCSV, iters, verbose)
-</pre><h2>Input<a name="3"></a></h2><p><i>inCSV</i>: Comma-separated file with base node coverage radii</p><p><i>iters</i>: Number of initial population iterations of the genetic algorithm to seed to select the best solution from</p><p><i>verbose</i>: Boolean flag to specify output verbosity</p><h2>Output<a name="6"></a></h2><p><i>bestN</i>(<i>NUM</i>, 3): Best node configuration such that row vector <i>bestN</i>(<i>r</i>, :) = [ <i>Cx</i> <i>Cy</i> <i>Cz</i> ], based on the maximal polyhedral volume <i>V</i> enclosed by it</p><h2>Checking for malformed arguments<a name="7"></a></h2><p>Input is preferred in a comma-delimited sequence of double-precision values without line breaks.</p><p>In the case that multi-line CSV input is provided, and is interpreted with ghost zeros, remove all commas from the end of each line.</p><pre class="codeinput">  argError = <span class="string">'Malformed input arguments: Please refer to the source.'</span>;
+</pre><p>See also: STRETCH_CHAINLINK, CHAINLINK, ATTENUATE, NODE_CONFIG_VOL</p><p>Copyright 2014 Sidharth Iyer (<a href="mailto:246964@gmail.com">246964@gmail.com</a>)</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Function signature</a></li><li><a href="#3">Input</a></li><li><a href="#6">Output</a></li><li><a href="#7">Checking for malformed arguments</a></li><li><a href="#9">Input parsing and reformatting</a></li><li><a href="#10">Calling <i>STRETCH_CHAINLINK</i> multiple times</a></li><li><a href="#11">Sorting solutions based on optimality</a></li><li><a href="#13">Saving the output to files</a></li></ul></div><h2>Function signature<a name="1"></a></h2><pre class="codeinput"><span class="keyword">function</span> bestN = optim_node_config(inCSV, iters, verbose)
+</pre><h2>Input<a name="3"></a></h2><p><i>inCSV</i>: Comma-separated file with base node coverage radii</p><p><i>iters</i>: (Optional) Number of initial population iterations of the genetic algorithm to seed to select the best solution from</p><p><i>verbose</i>: (Optional) Boolean flag to specify output verbosity</p><h2>Output<a name="6"></a></h2><p><i>bestN</i>(<i>NUM</i>, 3): Best node configuration such that row vector <i>bestN</i>(<i>r</i>, :) = [ <i>Cx</i> <i>Cy</i> <i>Cz</i> ], based on the maximal polyhedral volume <i>V</i> enclosed by it</p><h2>Checking for malformed arguments<a name="7"></a></h2><p>Input is preferred in a comma-delimited sequence of double-precision values without line breaks.</p><p>In the case that multi-line CSV input is provided, and is interpreted with ghost zeros, remove all commas from the end of each line.</p><pre class="codeinput">  argError = <span class="string">'Malformed input arguments. Use "help optim_node_config".'</span>;
 
   <span class="keyword">switch</span> nargin
     <span class="keyword">case</span> 1
@@ -95,6 +95,13 @@ Finds <span class="string">1</span> <span class="string">solution</span> <span c
       error(argError);
   <span class="keyword">end</span>
 </pre><h2>Input parsing and reformatting<a name="9"></a></h2><p>Read and reshape the input from the CSV if needed into <i>R</i>(1, :) = [ <i>R1</i> ... <i>R&lt;NUM&gt;</i> ]</p><pre class="codeinput">  R = csvread(inCSV);
+
+  <span class="keyword">if</span> verbose == true
+    <span class="comment">% Clean slate if good to go:</span>
+    close <span class="string">all</span>;
+    clc;
+  <span class="keyword">end</span>
+
   NUM = numel(R);   <span class="comment">% Number of nodes</span>
 
   <span class="keyword">if</span> size(R, 1) &gt; 1
@@ -105,395 +112,297 @@ Finds <span class="string">1</span> <span class="string">solution</span> <span c
   V = zeros(iters, 1);        <span class="comment">% Volumes of each incoming node configuration</span>
 
   <span class="keyword">for</span> i = 1 : iters
+    <span class="keyword">if</span> verbose == false
+      fprintf(<span class="string">'Running GA iteration:\t%d/%d... '</span>, i, iters);
+    <span class="keyword">end</span>
+
     [ N(:,:,i), V(i) ] = stretch_chainlink(R, verbose);
   <span class="keyword">end</span>
 </pre><pre class="codeoutput">
                                Best           Mean      Stall
 Generation      f-count        f(x)           f(x)    Generations
-    1           400            -617          -42.43        0
-    2           600           -1368          -65.59        0
-    3           800           -2530          -86.17        0
-    4          1000           -3978            1879        0
-    5          1200           -5258            2210        0
-    6          1400           -5389            4253        0
-    7          1600       -1.03e+04            5638        0
-    8          1800       -1.03e+04            7556        1
-    9          2000       -1.03e+04       1.469e+04        2
-   10          2200       -1.03e+04       1.655e+04        3
-   11          2400       -1.03e+04       1.225e+04        4
-   12          2600      -1.117e+04       1.714e+04        0
-   13          2800      -1.117e+04       1.696e+04        1
-   14          3000      -1.192e+04       3.061e+04        0
-   15          3200      -1.192e+04       2.752e+04        1
-   16          3400      -1.192e+04       2.966e+04        2
-   17          3600      -1.221e+04       2.513e+04        0
-   18          3800      -1.225e+04       3.001e+04        0
-   19          4000       -1.26e+04       3.794e+04        0
-   20          4200      -1.306e+04       3.604e+04        0
-   21          4400      -1.336e+04       3.413e+04        0
-   22          4600      -1.339e+04       3.712e+04        0
-   23          4800      -1.339e+04       3.449e+04        1
-   24          5000      -1.347e+04       3.318e+04        0
-   25          5200      -1.376e+04       4.853e+04        0
-   26          5400      -1.376e+04       4.296e+04        1
-   27          5600      -1.376e+04       5.109e+04        2
-   28          5800      -1.377e+04       5.796e+04        0
-   29          6000      -1.387e+04       5.687e+04        0
-   30          6200      -1.387e+04       4.991e+04        1
+    1           400            -849          -41.18        0
+    2           600           -2007          -143.4        0
+    3           800           -2221          -278.2        0
+    4          1000           -4084          -569.7        0
+    5          1200           -4999          -839.1        0
+    6          1400           -5051          -784.3        0
+    7          1600           -5051            -863        1
+    8          1800           -5266           -1219        0
+    9          2000           -7567           -1279        0
+   10          2200           -8501           -1367        0
+   11          2400           -9474           -1487        0
+   12          2600           -9474           -1789        1
+   13          2800           -9474           -2374        2
+   14          3000           -9474           -2871        3
+   15          3200           -9851           -3091        0
+   16          3400      -1.042e+04           -3525        0
+   17          3600      -1.058e+04           -3408        0
+   18          3800      -1.228e+04           -4075        0
+   19          4000      -1.236e+04           -4332        0
+   20          4200      -1.316e+04           -4433        0
+   21          4400      -1.316e+04           -4618        1
+   22          4600      -1.342e+04           -4639        0
+   23          4800      -1.342e+04           -4890        1
+   24          5000       -1.39e+04           -5485        0
+   25          5200      -1.416e+04           -5525        0
+   26          5400      -1.416e+04           -6298        1
+   27          5600      -1.416e+04           -6321        2
+   28          5800      -1.416e+04           -6182        0
+   29          6000      -1.416e+04           -6236        1
+   30          6200      -1.419e+04           -6466        0
 
                                Best           Mean      Stall
 Generation      f-count        f(x)           f(x)    Generations
-   31          6400      -1.387e+04       6.131e+04        2
-   32          6600      -1.387e+04       6.496e+04        3
-   33          6800      -1.387e+04       5.151e+04        0
-   34          7000      -1.471e+04       5.456e+04        0
-   35          7200      -1.471e+04       4.883e+04        1
-   36          7400      -1.471e+04       4.089e+04        2
-   37          7600      -1.471e+04       4.571e+04        3
-   38          7800      -1.471e+04       4.168e+04        4
-   39          8000      -1.471e+04       4.228e+04        5
-   40          8200      -1.471e+04       4.918e+04        6
-   41          8400      -1.471e+04       4.202e+04        7
-   42          8600      -1.471e+04        5.67e+04        8
-   43          8800      -1.473e+04       6.198e+04        0
-   44          9000      -1.473e+04       5.782e+04        1
-   45          9200      -1.486e+04       4.462e+04        0
-   46          9400      -1.489e+04       5.203e+04        0
-   47          9600      -1.489e+04       5.504e+04        1
-   48          9800      -1.499e+04       4.481e+04        0
-   49         10000      -1.499e+04        5.27e+04        1
-   50         10200      -1.499e+04        5.23e+04        2
-   51         10400      -1.499e+04       5.371e+04        3
-   52         10600      -1.499e+04       5.375e+04        4
-   53         10800      -1.499e+04       5.846e+04        5
-   54         11000      -1.499e+04       5.967e+04        6
-   55         11200      -1.499e+04       4.935e+04        7
-   56         11400      -1.499e+04       4.828e+04        0
-   57         11600      -1.499e+04       6.559e+04        1
-   58         11800      -1.499e+04       5.368e+04        2
-   59         12000      -1.499e+04       5.438e+04        3
-   60         12200      -1.499e+04       5.784e+04        4
+   31          6400      -1.432e+04           -7067        0
+   32          6600      -1.432e+04           -7151        0
+   33          6800      -1.447e+04           -7132        0
+   34          7000       -1.45e+04           -6954        0
+   35          7200      -1.464e+04           -6426        0
+   36          7400      -1.478e+04           -6631        0
+   37          7600      -1.496e+04           -6521        0
+   38          7800      -1.496e+04           -5889        1
+   39          8000      -1.506e+04           -5748        0
+   40          8200      -1.507e+04           -5800        0
+   41          8400      -1.507e+04           -5116        1
+   42          8600      -1.507e+04           -5184        2
+   43          8800      -1.507e+04           -5342        3
+   44          9000      -1.507e+04           -5576        4
+   45          9200      -1.507e+04           -5813        5
+   46          9400      -1.507e+04           -5479        6
+   47          9600      -1.507e+04           -5518        7
+   48          9800      -1.507e+04           -5850        8
+   49         10000      -1.507e+04           -6576        9
+   50         10200      -1.507e+04           -6434       10
+   51         10400      -1.507e+04           -6277       11
+   52         10600      -1.507e+04           -5915       12
+   53         10800      -1.507e+04           -6051       13
+   54         11000      -1.507e+04           -5676       14
+   55         11200      -1.507e+04           -5863       15
+   56         11400      -1.507e+04           -5758       16
+   57         11600      -1.525e+04           -5884        0
+   58         11800      -1.525e+04           -6586        1
+   59         12000      -1.525e+04           -6077        2
+   60         12200      -1.525e+04           -6263        3
 
                                Best           Mean      Stall
 Generation      f-count        f(x)           f(x)    Generations
-   61         12400      -1.504e+04       5.632e+04        0
-   62         12600      -1.504e+04       5.282e+04        1
-   63         12800      -1.504e+04       6.403e+04        2
-   64         13000      -1.504e+04        5.91e+04        3
-   65         13200      -1.504e+04       7.183e+04        4
-   66         13400      -1.504e+04       6.226e+04        5
-   67         13600      -1.504e+04        5.85e+04        6
-   68         13800      -1.504e+04       5.229e+04        7
-   69         14000      -1.504e+04       5.771e+04        8
-   70         14200      -1.504e+04       4.989e+04        9
-   71         14400      -1.504e+04       6.759e+04       10
-   72         14600      -1.504e+04       5.744e+04        0
-   73         14800      -1.504e+04        5.26e+04        1
-   74         15000      -1.504e+04       6.273e+04        2
-   75         15200      -1.504e+04       6.608e+04        3
-   76         15400      -1.504e+04       6.233e+04        4
-   77         15600      -1.504e+04       5.939e+04        5
-   78         15800      -1.504e+04       5.566e+04        6
-   79         16000      -1.504e+04       4.209e+04        7
-   80         16200      -1.504e+04       5.234e+04        0
-   81         16400      -1.504e+04       4.971e+04        1
-   82         16600      -1.504e+04       5.633e+04        2
-   83         16800      -1.505e+04       6.647e+04        0
-   84         17000      -1.505e+04         6.2e+04        0
-   85         17200      -1.505e+04       6.169e+04        1
-   86         17400      -1.505e+04       5.186e+04        2
-   87         17600      -1.505e+04       7.637e+04        3
-   88         17800      -1.505e+04       7.173e+04        4
-   89         18000      -1.505e+04       4.823e+04        5
-   90         18200      -1.505e+04       5.609e+04        6
+   61         12400      -1.525e+04           -5722        4
+   62         12600      -1.525e+04           -6018        5
+   63         12800      -1.525e+04           -5318        6
+   64         13000      -1.525e+04           -5506        7
+   65         13200      -1.525e+04           -5256        8
+   66         13400      -1.525e+04           -5617        9
+   67         13600      -1.525e+04           -5529       10
+   68         13800      -1.525e+04           -5323       11
+   69         14000      -1.525e+04           -5436       12
+   70         14200      -1.525e+04           -5706       13
+   71         14400      -1.525e+04           -5591       14
+   72         14600      -1.525e+04           -5777       15
+   73         14800      -1.525e+04           -6094       16
+   74         15000      -1.525e+04           -5051       17
+   75         15200      -1.525e+04           -5505       18
+   76         15400      -1.525e+04           -6392       19
+   77         15600      -1.525e+04           -5886       20
+   78         15800      -1.525e+04           -5942       21
+   79         16000      -1.525e+04           -5970       22
+   80         16200      -1.525e+04           -6488       23
+   81         16400      -1.525e+04           -6362        0
+   82         16600      -1.525e+04           -6049        1
+   83         16800      -1.525e+04           -6192        2
+   84         17000      -1.525e+04           -6388        3
+   85         17200      -1.525e+04           -5396        4
+   86         17400      -1.525e+04           -5724        5
+   87         17600      -1.525e+04           -5929        6
+   88         17800      -1.525e+04           -6169        7
+   89         18000      -1.525e+04           -6005        8
+   90         18200      -1.525e+04           -5769        9
 
                                Best           Mean      Stall
 Generation      f-count        f(x)           f(x)    Generations
-   91         18400      -1.505e+04        5.42e+04        7
-   92         18600      -1.505e+04        5.15e+04        8
-   93         18800      -1.505e+04       4.944e+04        9
-   94         19000      -1.505e+04       5.233e+04       10
-   95         19200      -1.506e+04       5.128e+04        0
-   96         19400      -1.506e+04       5.291e+04        1
-   97         19600      -1.506e+04       6.511e+04        2
-   98         19800      -1.506e+04       6.168e+04        3
+   91         18400      -1.525e+04           -5503       10
+   92         18600      -1.525e+04           -5248       11
+   93         18800      -1.525e+04           -5692       12
+   94         19000      -1.525e+04           -6014       13
+   95         19200      -1.525e+04           -6133       14
+   96         19400      -1.525e+04           -5864       15
+   97         19600      -1.525e+04           -6344       16
+   98         19800      -1.525e+04           -6242       17
+   99         20000      -1.525e+04           -6596       18
+  100         20200      -1.525e+04           -6198       19
+  101         20400      -1.525e+04           -6576       20
+  102         20600      -1.525e+04           -6118       21
+  103         20800      -1.525e+04           -5721       22
+  104         21000      -1.525e+04           -6152       23
+  105         21200      -1.525e+04           -5765       24
+  106         21400      -1.525e+04           -5772       25
+  107         21600      -1.525e+04           -5956       26
 Optimization terminated: average change in the fitness value less than options.TolFun.
-N =
-  Columns 1 through 7
-    4.7075   -7.8025  -17.3234    0.2057   26.6253  -21.5711   19.5053
-  Columns 8 through 12
-    2.5128   24.9589  -44.8855  -12.8861   10.2639
-Elapsed time is 15.889803 seconds.
+Elapsed time is 91.898467 seconds.
 sep = 
-             Node1     Node2     Node3     Node4
-             ______    ______    ______    _____
-    Node1         0         0         0    0    
-    Node2     34.98         0         0    0    
-    Node3    45.969    55.847         0    0    
-    Node4    56.977    67.881    67.818    0    
+             Node1     Node2     Node3
+             ______    ______    _____
+    Node2    34.979       NaN      NaN
+    Node3    45.991    56.645      NaN
+    Node4    56.991    66.583    71.43
 
                                Best           Mean      Stall
 Generation      f-count        f(x)           f(x)    Generations
-    1           400           -1264           61.09        0
-    2           600           -1967           307.8        0
-    3           800           -1967           281.1        1
-    4          1000           -3360             477        0
-    5          1200           -4629            1063        0
-    6          1400           -7545            1710        0
-    7          1600           -7604            6035        0
-    8          1800           -7604            8590        1
-    9          2000           -9510       1.186e+04        0
-   10          2200           -9510       1.532e+04        1
-   11          2400           -9892       1.784e+04        0
-   12          2600           -9892       2.324e+04        1
-   13          2800      -1.109e+04       3.163e+04        0
-   14          3000      -1.109e+04       2.888e+04        1
-   15          3200      -1.124e+04        3.23e+04        0
-   16          3400      -1.238e+04       2.536e+04        0
-   17          3600      -1.238e+04       3.153e+04        1
-   18          3800      -1.258e+04        2.37e+04        0
-   19          4000      -1.258e+04       2.407e+04        1
-   20          4200      -1.285e+04       2.572e+04        0
-   21          4400      -1.285e+04       3.383e+04        1
-   22          4600      -1.352e+04        3.38e+04        0
-   23          4800      -1.362e+04       3.826e+04        0
-   24          5000      -1.362e+04       3.665e+04        1
-   25          5200      -1.372e+04       4.916e+04        0
-   26          5400      -1.426e+04       3.733e+04        0
-   27          5600      -1.426e+04       3.877e+04        1
-   28          5800      -1.426e+04       3.346e+04        2
-   29          6000      -1.459e+04       3.663e+04        0
-   30          6200      -1.459e+04       3.679e+04        1
+    1           400           -1656          -42.59        0
+    2           600           -4995          -184.4        0
+    3           800           -6985          -443.3        0
+    4          1000           -6985          -660.2        1
+    5          1200           -8112          -983.8        0
+    6          1400           -8112           -1301        1
+    7          1600           -8112           -1358        2
+    8          1800           -8397           -1426        0
+    9          2000      -1.122e+04           -1523        0
+   10          2200      -1.122e+04           -1619        1
+   11          2400      -1.131e+04           -1664        0
+   12          2600      -1.149e+04           -2277        0
+   13          2800      -1.149e+04           -2207        1
+   14          3000      -1.149e+04           -2773        2
+   15          3200      -1.317e+04           -3264        0
+   16          3400      -1.317e+04           -3913        1
+   17          3600       -1.35e+04           -4303        0
+   18          3800      -1.393e+04           -4238        0
+   19          4000      -1.398e+04           -4979        0
+   20          4200      -1.403e+04           -4909        0
+   21          4400      -1.419e+04           -4900        0
+   22          4600      -1.419e+04           -5424        1
+   23          4800      -1.465e+04           -5670        0
+   24          5000      -1.465e+04           -5981        1
+   25          5200      -1.465e+04           -5820        2
+   26          5400      -1.465e+04           -5729        3
+   27          5600      -1.465e+04           -5832        4
+   28          5800      -1.465e+04           -5790        5
+   29          6000      -1.467e+04           -5632        0
+   30          6200      -1.467e+04           -5647        1
 
                                Best           Mean      Stall
 Generation      f-count        f(x)           f(x)    Generations
-   31          6400      -1.467e+04       4.382e+04        0
-   32          6600      -1.467e+04        5.58e+04        1
-   33          6800      -1.467e+04        5.53e+04        2
-   34          7000      -1.496e+04       5.893e+04        0
-   35          7200      -1.496e+04       5.672e+04        1
-   36          7400      -1.496e+04       5.584e+04        2
-   37          7600      -1.507e+04       5.428e+04        0
-   38          7800      -1.507e+04       6.036e+04        1
-   39          8000      -1.507e+04       7.673e+04        2
-   40          8200      -1.507e+04       6.284e+04        3
-   41          8400      -1.507e+04       5.576e+04        4
-   42          8600      -1.507e+04       5.635e+04        5
-   43          8800      -1.507e+04       5.588e+04        6
-   44          9000      -1.507e+04       5.304e+04        7
-   45          9200       -1.51e+04       6.774e+04        0
-   46          9400       -1.51e+04       5.585e+04        1
-   47          9600       -1.51e+04       5.664e+04        2
-   48          9800       -1.51e+04        3.78e+04        3
-   49         10000       -1.51e+04        4.98e+04        4
-   50         10200       -1.51e+04       4.959e+04        5
-   51         10400       -1.51e+04       6.739e+04        6
-   52         10600       -1.51e+04       6.465e+04        7
-   53         10800       -1.51e+04       5.353e+04        8
-   54         11000       -1.51e+04       5.435e+04        9
-   55         11200       -1.51e+04       5.676e+04       10
-   56         11400       -1.51e+04       5.119e+04       11
-   57         11600       -1.51e+04       5.573e+04       12
-   58         11800       -1.51e+04       5.892e+04       13
-   59         12000       -1.51e+04       5.443e+04       14
-   60         12200       -1.51e+04       5.926e+04       15
+   31          6400      -1.473e+04           -5557        0
+   32          6600      -1.473e+04           -5614        1
+   33          6800      -1.473e+04           -5519        2
+   34          7000      -1.473e+04           -5197        3
+   35          7200      -1.473e+04           -4742        4
+   36          7400      -1.473e+04           -3919        5
+   37          7600      -1.473e+04           -4641        6
+   38          7800      -1.473e+04           -5184        7
+   39          8000      -1.491e+04           -5599        0
+   40          8200      -1.491e+04           -5600        1
+   41          8400      -1.491e+04           -5349        2
+   42          8600      -1.491e+04           -5776        3
+   43          8800      -1.491e+04           -5853        4
+   44          9000      -1.501e+04           -5783        0
+   45          9200      -1.501e+04           -5905        1
+   46          9400      -1.501e+04           -5873        2
+   47          9600      -1.501e+04           -5974        3
+   48          9800      -1.501e+04           -6348        4
+   49         10000      -1.501e+04           -6605        5
+   50         10200      -1.501e+04           -6773        0
+   51         10400      -1.501e+04           -5956        1
+   52         10600      -1.501e+04           -6385        2
+   53         10800      -1.502e+04           -6004        0
+   54         11000      -1.502e+04           -6047        1
+   55         11200      -1.502e+04           -6501        0
+   56         11400      -1.502e+04           -6948        1
+   57         11600      -1.509e+04           -6568        0
+   58         11800       -1.51e+04           -6318        0
+   59         12000       -1.51e+04           -6199        1
+   60         12200       -1.51e+04           -6475        2
 
                                Best           Mean      Stall
 Generation      f-count        f(x)           f(x)    Generations
-   61         12400       -1.51e+04       4.892e+04       16
-   62         12600       -1.51e+04       5.156e+04       17
-   63         12800       -1.51e+04       5.789e+04       18
-   64         13000       -1.51e+04       5.373e+04       19
-   65         13200       -1.51e+04       5.064e+04       20
-   66         13400       -1.51e+04       6.442e+04       21
-   67         13600       -1.51e+04       6.355e+04       22
-   68         13800      -1.513e+04       5.304e+04        0
-   69         14000      -1.513e+04       5.284e+04        1
-   70         14200      -1.513e+04       4.844e+04        2
-   71         14400      -1.513e+04        5.01e+04        0
-   72         14600      -1.513e+04       3.988e+04        1
-   73         14800      -1.513e+04       4.196e+04        2
-   74         15000      -1.513e+04       5.435e+04        3
-   75         15200      -1.513e+04       4.902e+04        4
-   76         15400      -1.514e+04       4.031e+04        0
-   77         15600      -1.514e+04       2.964e+04        0
-   78         15800      -1.514e+04        3.67e+04        1
-   79         16000      -1.514e+04       4.145e+04        2
-   80         16200      -1.514e+04       4.225e+04        3
-   81         16400      -1.514e+04       4.617e+04        4
-   82         16600      -1.514e+04       4.632e+04        5
-   83         16800      -1.514e+04       3.947e+04        6
-   84         17000      -1.514e+04       4.083e+04        7
-   85         17200      -1.514e+04       4.738e+04        8
-   86         17400      -1.514e+04       4.563e+04        9
-   87         17600      -1.514e+04       5.434e+04       10
+   61         12400       -1.51e+04           -6893        3
+   62         12600       -1.51e+04           -6290        4
+   63         12800       -1.51e+04           -5879        5
+   64         13000       -1.51e+04           -5913        6
+   65         13200       -1.51e+04           -5940        7
+   66         13400       -1.51e+04           -5840        8
+   67         13600       -1.51e+04           -5926        9
+   68         13800      -1.515e+04           -6016        0
+   69         14000      -1.515e+04           -5884        1
+   70         14200      -1.515e+04           -5865        2
+   71         14400      -1.515e+04           -6410        3
+   72         14600      -1.515e+04           -6248        4
+   73         14800      -1.515e+04           -6051        5
+   74         15000      -1.515e+04           -6352        6
+   75         15200      -1.515e+04           -6549        7
+   76         15400      -1.515e+04           -5959        8
+   77         15600      -1.515e+04           -6094        9
+   78         15800      -1.515e+04           -5496       10
+   79         16000      -1.515e+04           -5762       11
+   80         16200      -1.515e+04           -6252       12
+   81         16400      -1.515e+04           -6517       13
+   82         16600      -1.515e+04           -5664       14
+   83         16800      -1.515e+04           -6334       15
+   84         17000      -1.515e+04           -6369       16
+   85         17200      -1.515e+04           -5680       17
+   86         17400      -1.515e+04           -5826       18
+   87         17600      -1.515e+04           -6099       19
+   88         17800      -1.515e+04           -6069       20
+   89         18000      -1.515e+04           -6026       21
+   90         18200      -1.515e+04           -5691       22
+
+                               Best           Mean      Stall
+Generation      f-count        f(x)           f(x)    Generations
+   91         18400      -1.515e+04           -5730       23
+   92         18600      -1.515e+04           -5623       24
+   93         18800      -1.515e+04           -5843       25
+   94         19000      -1.515e+04           -5510       26
+   95         19200      -1.515e+04           -6001       27
+   96         19400      -1.515e+04           -6460       28
+   97         19600      -1.515e+04           -6955       29
+   98         19800      -1.515e+04           -6741       30
+   99         20000      -1.515e+04           -6269       31
+  100         20200      -1.515e+04           -6513       32
+  101         20400      -1.515e+04           -6499       33
+  102         20600      -1.515e+04           -6243       34
+  103         20800      -1.515e+04           -5911       35
+  104         21000      -1.515e+04           -6122       36
+  105         21200      -1.515e+04           -6310       37
+  106         21400      -1.515e+04           -6823       38
+  107         21600      -1.515e+04           -6947       39
 Optimization terminated: average change in the fitness value less than options.TolFun.
-N =
-  Columns 1 through 7
-   -9.7001   18.6715    1.1388  -11.8051   -2.5751   28.8688   33.2168
-  Columns 8 through 12
-   27.4407   15.0905   11.8843  -27.0841  -25.0444
-Elapsed time is 14.843353 seconds.
+Elapsed time is 100.365410 seconds.
 sep = 
-             Node1     Node2     Node3     Node4
-             ______    ______    ______    _____
-    Node1         0         0         0    0    
-    Node2    34.997         0         0    0    
-    Node3    45.972    55.837         0    0    
-    Node4    56.965    63.785    70.985    0    
-
-                               Best           Mean      Stall
-Generation      f-count        f(x)           f(x)    Generations
-    1           400           -1207          -53.19        0
-    2           600           -1278           253.3        0
-    3           800           -3330           965.6        0
-    4          1000           -4147           932.5        0
-    5          1200           -4147            1284        1
-    6          1400           -6137           782.9        0
-    7          1600           -7067            2596        0
-    8          1800           -7067            5982        1
-    9          2000           -7671            8695        0
-   10          2200           -8262       1.004e+04        0
-   11          2400           -9133       1.303e+04        0
-   12          2600           -9133       2.098e+04        1
-   13          2800      -1.099e+04       2.949e+04        0
-   14          3000      -1.099e+04       2.543e+04        1
-   15          3200      -1.109e+04       1.421e+04        0
-   16          3400      -1.129e+04       2.202e+04        0
-   17          3600      -1.239e+04       2.352e+04        0
-   18          3800      -1.239e+04       2.753e+04        1
-   19          4000      -1.239e+04       3.232e+04        2
-   20          4200      -1.278e+04       3.379e+04        0
-   21          4400      -1.299e+04       3.155e+04        0
-   22          4600      -1.487e+04       3.627e+04        0
-   23          4800      -1.487e+04       4.017e+04        1
-   24          5000      -1.487e+04       4.555e+04        2
-   25          5200      -1.487e+04       4.142e+04        3
-   26          5400      -1.487e+04        4.52e+04        4
-   27          5600      -1.487e+04       4.448e+04        5
-   28          5800      -1.487e+04       5.378e+04        6
-   29          6000      -1.487e+04       5.066e+04        7
-   30          6200      -1.487e+04       4.546e+04        8
-
-                               Best           Mean      Stall
-Generation      f-count        f(x)           f(x)    Generations
-   31          6400      -1.487e+04       5.527e+04        9
-   32          6600      -1.487e+04       5.208e+04       10
-   33          6800      -1.489e+04        6.37e+04        0
-   34          7000      -1.489e+04       7.267e+04        1
-   35          7200      -1.489e+04        6.72e+04        2
-   36          7400      -1.489e+04       6.739e+04        3
-   37          7600       -1.49e+04       6.383e+04        0
-   38          7800       -1.49e+04       5.433e+04        1
-   39          8000       -1.49e+04       6.621e+04        2
-   40          8200       -1.49e+04       5.911e+04        3
-   41          8400       -1.49e+04        4.86e+04        4
-   42          8600       -1.49e+04       6.022e+04        5
-   43          8800      -1.496e+04       7.192e+04        0
-   44          9000      -1.496e+04       6.389e+04        1
-   45          9200      -1.496e+04       7.055e+04        2
-   46          9400      -1.496e+04       5.782e+04        3
-   47          9600      -1.496e+04       5.856e+04        4
-   48          9800      -1.496e+04       6.009e+04        5
-   49         10000      -1.496e+04       6.274e+04        6
-   50         10200      -1.496e+04       6.098e+04        7
-   51         10400      -1.496e+04       5.088e+04        8
-   52         10600      -1.496e+04       6.577e+04        9
-   53         10800      -1.496e+04       5.188e+04       10
-   54         11000      -1.496e+04       4.799e+04       11
-   55         11200        -1.5e+04       5.068e+04        0
-   56         11400        -1.5e+04       4.916e+04        1
-   57         11600        -1.5e+04       5.106e+04        2
-   58         11800        -1.5e+04       5.134e+04        3
-   59         12000        -1.5e+04       6.423e+04        4
-   60         12200        -1.5e+04       6.447e+04        5
-
-                               Best           Mean      Stall
-Generation      f-count        f(x)           f(x)    Generations
-   61         12400        -1.5e+04       6.567e+04        6
-   62         12600        -1.5e+04       5.929e+04        7
-   63         12800        -1.5e+04       6.074e+04        8
-   64         13000      -1.502e+04       5.997e+04        0
-   65         13200      -1.502e+04        6.49e+04        1
-   66         13400      -1.502e+04       5.828e+04        2
-   67         13600      -1.502e+04       5.046e+04        3
-   68         13800      -1.502e+04       5.036e+04        4
-   69         14000      -1.502e+04        4.68e+04        5
-   70         14200      -1.502e+04       4.969e+04        6
-   71         14400      -1.502e+04       6.264e+04        7
-   72         14600      -1.502e+04       5.174e+04        8
-   73         14800      -1.502e+04       6.357e+04        9
-   74         15000      -1.502e+04       5.167e+04       10
-   75         15200      -1.502e+04       5.182e+04       11
-   76         15400      -1.502e+04        4.72e+04       12
-   77         15600      -1.502e+04       4.192e+04       13
-   78         15800      -1.502e+04       4.352e+04       14
-   79         16000      -1.502e+04       4.351e+04       15
-   80         16200      -1.502e+04       5.591e+04       16
-   81         16400      -1.502e+04       5.788e+04       17
-   82         16600      -1.502e+04       5.373e+04       18
-   83         16800      -1.502e+04       5.682e+04       19
-   84         17000      -1.502e+04       5.768e+04       20
-   85         17200      -1.502e+04       5.824e+04       21
-   86         17400      -1.502e+04       4.891e+04       22
-   87         17600      -1.502e+04       4.417e+04       23
-   88         17800      -1.502e+04       5.462e+04       24
-   89         18000      -1.502e+04       6.385e+04       25
-   90         18200      -1.502e+04        5.27e+04       26
-
-                               Best           Mean      Stall
-Generation      f-count        f(x)           f(x)    Generations
-   91         18400      -1.502e+04       4.785e+04       27
-   92         18600      -1.502e+04       4.897e+04       28
-   93         18800      -1.502e+04       5.578e+04       29
-Optimization terminated: average change in the fitness value less than options.TolFun.
-N =
-  Columns 1 through 7
-  -11.6805   -9.0691    7.7546   11.6253   11.0480   24.4048   25.5094
-  Columns 8 through 12
-  -19.5618  -17.1631  -18.7429   31.5696  -31.5765
-Elapsed time is 15.432245 seconds.
-sep = 
-             Node1     Node2     Node3     Node4
-             ______    ______    ______    _____
-    Node1         0         0         0    0    
-    Node2    35.001         0         0    0    
-    Node3    45.979    53.457         0    0    
-    Node4    56.994    66.912    69.141    0    
-</pre><img vspace="5" hspace="5" src="optim_node_config_01.png" alt=""> <img vspace="5" hspace="5" src="optim_node_config_02.png" alt=""> <img vspace="5" hspace="5" src="optim_node_config_03.png" alt=""> <img vspace="5" hspace="5" src="optim_node_config_04.png" alt=""> <h2>Sorting solutions based on optimality<a name="11"></a></h2><p>Sort node configurations based on the descending order of the polyhedral volume enclosed by each:</p><pre class="codeinput">  [ V, order ] = sort(V, <span class="string">'descend'</span>);
-  N = N(:,:,order);
+             Node1     Node2     Node3 
+             ______    ______    ______
+    Node2    34.965       NaN       NaN
+    Node3    45.968    56.298       NaN
+    Node4    56.989     66.06    69.064
+</pre><img vspace="5" hspace="5" src="optim_node_config_01.png" alt=""> <img vspace="5" hspace="5" src="optim_node_config_02.png" alt=""> <img vspace="5" hspace="5" src="optim_node_config_03.png" alt=""> <h2>Sorting solutions based on optimality<a name="11"></a></h2><p>Sort node configurations based on the descending order of the polyhedral volume enclosed by each:</p><pre class="codeinput">  [ V, rank ] = sort(V, <span class="string">'descend'</span>);
+  N = N(:,:,rank);
 </pre><p>Display sorted solutions if verbosity is required:</p><pre class="codeinput">  <span class="keyword">if</span> verbose == true
-    V
-    N
+    display(V);
+    display(N);
+
+    <span class="keyword">if</span> iters &gt; 1
+      fprintf(<span class="string">'Iteration-wise '</span>);
+      display(rank);  <span class="comment">% Display iteration rankings</span>
+    <span class="keyword">end</span>
+  <span class="keyword">else</span>
+    node_config_vol(N(:,:,1), R, verbose);  <span class="comment">% Visualize best solution only</span>
   <span class="keyword">end</span>
 </pre><pre class="codeoutput">V =
    1.0e+04 *
-    1.5139
-    1.5058
-    1.5019
+    1.5249
+    1.5145
 N(:,:,1) =
-   -9.7001   18.6715    1.1388
-  -11.8051   -2.5751   28.8688
-   33.2168   27.4407   15.0905
-   11.8843  -27.0841  -25.0444
+  -11.2889  -17.2829  -21.8597
+   10.4893  -37.5644   -3.4777
+  -14.5961    9.6281   15.2893
+   32.9737   14.9176  -37.7330
 N(:,:,2) =
-    4.7075   -7.8025  -17.3234
-    0.2057   26.6253  -21.5711
-   19.5053    2.5128   24.9589
-  -44.8855  -12.8861   10.2639
-N(:,:,3) =
-  -11.6805   -9.0691    7.7546
-   11.6253   11.0480   24.4048
-   25.5094  -19.5618  -17.1631
-  -18.7429   31.5696  -31.5765
-</pre><p>Display the ranks of each iteration:</p><pre class="codeinput">  <span class="keyword">if</span> iters &gt; 1
-    order
-  <span class="keyword">end</span>
-</pre><pre class="codeoutput">order =
-     2
+   22.3528    7.7590    2.9816
+    6.4303    1.0959   33.3896
+   -5.9696   43.7192   -1.2372
+  -19.6869  -20.2326  -23.4161
+Iteration-wise rank =
      1
-     3
-</pre><h2>Saving the output to files<a name="14"></a></h2><p>Save the best node configuration to <i>inCSV</i>-optim_node_config.csv:</p><pre class="codeinput">  bestN = N(:,:,1);   <span class="comment">% Save only the best node configuration</span>
+     2
+</pre><h2>Saving the output to files<a name="13"></a></h2><p>Save the best node configuration to <i>inCSV</i>-optim_node_config.csv:</p><pre class="codeinput">  bestN = N(:,:,1);   <span class="comment">% Save only the best node configuration</span>
   outN = [ inCSV, <span class="string">'-optim_node_config.csv'</span> ];   <span class="comment">% Append to filename</span>
   csvwrite(outN, bestN);
 </pre><p>Save the maximal volume achieved to <i>inCSV</i>-optim-vol.txt:</p><pre class="codeinput">  bestV = V(1);       <span class="comment">% Save only the maximal volume</span>
@@ -506,8 +415,6 @@ N(:,:,3) =
 % Calculates the best volume-optimized node configuration
 % for the given base node coverage radii.
 %
-% Copyright 2014 Sidharth Iyer <246964@gmail.com>
-%
 % Examples:
 %
 %   OPTIM_NODE_CONFIG('test_radii.csv')
@@ -519,18 +426,21 @@ N(:,:,3) =
 %   OPTIM_NODE_CONFIG('test_radii.csv', 1, true)
 %   Finds 1 solution for the node radii in test_radii.csv in verbose fashion.
 %
-% See also STRETCH_CHAINLINK, CHAINLINK, ATTENUATE
+% See also: STRETCH_CHAINLINK, CHAINLINK, ATTENUATE, NODE_CONFIG_VOL
+%
+% Copyright 2014 Sidharth Iyer (246964@gmail.com)
 
 %% Function signature
+
 function bestN = optim_node_config(inCSV, iters, verbose)
 
 %% Input
 % _inCSV_: Comma-separated file with base node coverage radii
 %%
-% _iters_: Number of initial population iterations of the genetic algorithm
-% to seed to select the best solution from
+% _iters_: (Optional) Number of initial population iterations of
+% the genetic algorithm to seed to select the best solution from
 %%
-% _verbose_: Boolean flag to specify output verbosity
+% _verbose_: (Optional) Boolean flag to specify output verbosity
 
 %% Output
 % _bestN_(_NUM_, 3): Best node configuration such that
@@ -545,7 +455,7 @@ function bestN = optim_node_config(inCSV, iters, verbose)
   % and is interpreted with ghost zeros,
   % remove all commas from the end of each line.
 
-  argError = 'Malformed input arguments: Please refer to the source.';
+  argError = 'Malformed input arguments. Use "help optim_node_config".';
 
   switch nargin
     case 1
@@ -572,6 +482,13 @@ function bestN = optim_node_config(inCSV, iters, verbose)
   % _R_(1, :) = [ _R1_ ... _R<NUM>_ ]
 
   R = csvread(inCSV);
+
+  if verbose == true
+    % Clean slate if good to go:
+    close all;
+    clc;
+  end
+
   NUM = numel(R);   % Number of nodes
 
   if size(R, 1) > 1
@@ -587,6 +504,10 @@ function bestN = optim_node_config(inCSV, iters, verbose)
   V = zeros(iters, 1);        % Volumes of each incoming node configuration
 
   for i = 1 : iters
+    if verbose == false
+      fprintf('Running GA iteration:\t%d/%d... ', i, iters);
+    end
+
     [ N(:,:,i), V(i) ] = stretch_chainlink(R, verbose);
   end
 
@@ -594,22 +515,22 @@ function bestN = optim_node_config(inCSV, iters, verbose)
   % Sort node configurations based on the descending order of
   % the polyhedral volume enclosed by each:
 
-  [ V, order ] = sort(V, 'descend');
-  N = N(:,:,order);
+  [ V, rank ] = sort(V, 'descend');
+  N = N(:,:,rank);
 
   %%
   % Display sorted solutions if verbosity is required:
 
   if verbose == true
-    V
-    N
-  end
+    display(V);
+    display(N);
 
-  %%
-  % Display the ranks of each iteration:
-
-  if iters > 1
-    order
+    if iters > 1
+      fprintf('Iteration-wise ');
+      display(rank);  % Display iteration rankings
+    end
+  else
+    node_config_vol(N(:,:,1), R, verbose);  % Visualize best solution only
   end
 
   %% Saving the output to files

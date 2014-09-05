@@ -2,8 +2,6 @@
 % Calculates the best volume-optimized node configuration
 % for the given base node coverage radii.
 %
-% Copyright 2014 Sidharth Iyer (246964@gmail.com)
-%
 % Examples:
 %
 %   OPTIM_NODE_CONFIG('test_radii.csv')
@@ -15,9 +13,12 @@
 %   OPTIM_NODE_CONFIG('test_radii.csv', 1, true)
 %   Finds 1 solution for the node radii in test_radii.csv in verbose fashion.
 %
-% See also STRETCH_CHAINLINK, CHAINLINK, ATTENUATE, NODE_CONFIG_VOL
+% See also: STRETCH_CHAINLINK, CHAINLINK, ATTENUATE, NODE_CONFIG_VOL
+%
+% Copyright 2014 Sidharth Iyer (246964@gmail.com)
 
 %% Function signature
+
 function bestN = optim_node_config(inCSV, iters, verbose)
 
 %% Input
