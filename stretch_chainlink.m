@@ -15,7 +15,6 @@
 % Copyright 2014 Sidharth Iyer (246964@gmail.com)
 
 %% Function signature
-
 function [ N, V ] = stretch_chainlink(R, verbose)
 
 %% Input
@@ -25,14 +24,14 @@ function [ N, V ] = stretch_chainlink(R, verbose)
 
 %% Output
 % _N_(_NUM_, 3): Optimized node configuration such that
-% row vector _N_(_i_, :) = [ _Cx_ _Cy_ _Cz_ ]
+% _N_(_i_, :) = [ _Cx_ _Cy_ _Cz_ ]
 %%
 % _V_: Polyhedral volume enclosed by _N_
 
   %%
-  % Check for malformed arguments:
+  % Check for malformed inout:
 
-  argError = 'Malformed input arguments. Use "help stretch_chainlink".';
+  argError = 'Malformed input arguments: use "help stretch_chainlink"';
 
   switch nargin
     case 1
@@ -43,6 +42,23 @@ function [ N, V ] = stretch_chainlink(R, verbose)
       end
     otherwise
       error(argError);
+  end
+
+  NUM = numel(R);   % Number of nodes
+  
+  if size(R, 1) > 1
+    % Workaround for MATLAB's column-major matrix policy:
+    R = reshape(R.', 1, NUM);
+  end
+
+  if NUM > 0
+    for i = 1 : NUM
+      if R(i) <= 0
+        error(argError);
+      end
+    end
+  else
+    error(argError);
   end
 
   %% Setting genetic algorithm options
@@ -68,7 +84,7 @@ function [ N, V ] = stretch_chainlink(R, verbose)
             'PopInitRange', [ -HALFRANGE; HALFRANGE ], ...  % { [ -10; 10 ] }
             'Vectorized',   'on' ...                        % { 'off' }
           );
-  options = gaoptimset(oldopts, newopts);   % Overwrite selected parameters
+  options = gaoptimset(oldopts, newopts);   % Overwrite default options
 
   if verbose == true
     options = gaoptimset(options, ...
@@ -80,7 +96,6 @@ function [ N, V ] = stretch_chainlink(R, verbose)
   %% Invoking the genetic algorithm
   % Maximize _CHAINLINK_ by minimizing the negative of its score:
 
-  NUM = numel(R);   % Number of nodes
   objFunc = @(N) -chainlink(N, R, NUM);     % Create function handle for GA
 
   if verbose == true
@@ -95,10 +110,10 @@ function [ N, V ] = stretch_chainlink(R, verbose)
 
   %% Processing the genetic algrithm output
   % Reshape _N_(1, 3 * _NUM_) as _N_(_NUM_, 3),
-  % such that row vector _N_(_i_, :) = [ _Cx_ _Cy_ _Cz_ ]
+  % such that _N_(_i_, :) = [ _Cx_ _Cy_ _Cz_ ]
 
   % Workaround for MATLAB's column-major matrix policy:
-  N = reshape(N, 3, NUM)';
+  N = reshape(N, 3, NUM).';
 
   %%
   % Calculate and map the separation between each pair of nodes:
@@ -121,7 +136,7 @@ function [ N, V ] = stretch_chainlink(R, verbose)
     end
 
     sep = array2table( ...
-                      sep(1 : NUM - 1, 2 : NUM)', ...
+                      sep(1 : NUM - 1, 2 : NUM).', ...
                       'RowNames', labels(2 : NUM), ...
                       'VariableNames', labels(1 : NUM - 1) ...
                      );

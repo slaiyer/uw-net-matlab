@@ -11,12 +11,11 @@
 % Copyright 2014 Sidharth Iyer (246964@gmail.com)
 
 %% Function signature
-
 function V = node_config_vol(N, R, verbose)
 
 %% Input
 % _N_(_NUM_, 3): Optimized node configuration such that
-% row vector _N_(_i_, :) = [ _Cx_ _Cy_ _Cz_ ]
+% _N_(_i_, :) = [ _Cx_ _Cy_ _Cz_ ]
 %%
 % _R_(_NUM_): Vector of base node coverage radii
 %%
@@ -26,19 +25,40 @@ function V = node_config_vol(N, R, verbose)
 % _V_: Polyhedral volume enclosed by _N_
 
   %%
-  % Check for malformed arguments:
+  % Check for malformed input:
 
-  argError = 'Malformed input arguments. Use "help vis_node_config".';
+  argError = 'Malformed input arguments: use "help node_config_vol"';
+
+  NUM = numel(R);   % Number of nodes
 
   switch nargin
     case 2
-      verbose = false;
+      if size(N, 1) == NUM && size(N, 2) == 3
+        verbose = false;
+      else
+        error(argError);
+      end
     case 3
-      if ~islogical(verbose)
+      if size(N, 1) ~= NUM || size(N, 2) ~= 3 || ~islogical(verbose)
         error(argError);
       end
     otherwise
       error(argError);
+  end
+  
+  if size(R, 1) > 1
+    % Workaround for MATLAB's column-major matrix policy:
+    R = reshape(R.', 1, NUM);
+  end
+
+  if NUM > 0
+    for i = 1 : NUM
+      if R(i) <= 0
+        error(argError);
+      end
+    end
+  else
+    error(argError);
   end
 
   %%
@@ -57,8 +77,8 @@ function V = node_config_vol(N, R, verbose)
     figure('Name', figTitle, 'NumberTitle', 'on');
 
     % Plot colours
-    meshRed = [ 0.666 0 0 ];
-    faceOrange = [ 1 0.9 0.7 ];
+    meshRed = [ 1 0.5 0.5 ];
+    faceOrange = [ 1 0.95 0.8 ];
     green = [ 0.5 1 0.5 ];
 
     %%
@@ -110,6 +130,8 @@ function V = node_config_vol(N, R, verbose)
     zlabel('Z');
     axis equal;
     axis vis3d;
+
+    hold off;
   end
 
 end

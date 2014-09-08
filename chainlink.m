@@ -10,7 +10,6 @@
 % Copyright 2014 Sidharth Iyer (246964@gmail.com)
 
 %% Function signature
-
 function volume = chainlink(N, R, NUM)
 
 %% Input
@@ -45,10 +44,10 @@ function volume = chainlink(N, R, NUM)
     %%
     % Reformat each individual into a convenient 2D matrix
     % Reshape _N_(1, :) as _N2_(_NUM_, 3),
-    % such that row vector _N2_(_i_, :) = [ _Cx_ _Cy_ _Cz_ ]
+    % such that _N2_(_i_, :) = [ _Cx_ _Cy_ _Cz_ ]
 
     % Workaround for MATLAB's column-major matrix policy:
-    N2 = reshape(N(i,:), 3, NUM)';
+    N2 = reshape(N(i,:), 3, NUM).';
 
     %% Calculating the volume of the point cloud polyhedron
     % Use Delaunay triangulation to create a tetrahedral mesh,

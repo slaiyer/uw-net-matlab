@@ -18,7 +18,6 @@
 % Copyright 2014 Sidharth Iyer (246964@gmail.com)
 
 %% Function signature
-
 function bestN = optim_node_config(inCSV, iters, verbose)
 
 %% Input
@@ -31,10 +30,10 @@ function bestN = optim_node_config(inCSV, iters, verbose)
 
 %% Output
 % _bestN_(_NUM_, 3): Best node configuration such that
-% row vector _bestN_(_r_, :) = [ _Cx_ _Cy_ _Cz_ ],
+% _bestN_(_r_, :) = [ _Cx_ _Cy_ _Cz_ ],
 % based on the maximal polyhedral volume _V_ enclosed by it
 
-  %% Checking for malformed arguments
+  %% Checking for malformed input
   % Input is preferred in a comma-delimited sequence of
   % double-precision values without line breaks.
   %%
@@ -42,7 +41,7 @@ function bestN = optim_node_config(inCSV, iters, verbose)
   % and is interpreted with ghost zeros,
   % remove all commas from the end of each line.
 
-  argError = 'Malformed input arguments. Use "help optim_node_config".';
+  argError = 'Malformed input arguments: use "help optim_node_config"';
 
   switch nargin
     case 1
@@ -57,30 +56,36 @@ function bestN = optim_node_config(inCSV, iters, verbose)
       end
     case 3
       iters = uint64(iters);  % Cast to unsigned 64-bit integer
-      if iters <= 0 || ~islogical(verbose)
+      if iters == 0 || ~islogical(verbose)
         error(argError);
       end
     otherwise
       error(argError);
   end
-
-  %% Input parsing and reformatting
-  % Read and reshape the input from the CSV if needed into
-  % _R_(1, :) = [ _R1_ ... _R<NUM>_ ]
-
+  
   R = csvread(inCSV);
-
-  if verbose == true
-    % Clean slate if good to go:
-    close all;
-    clc;
-  end
-
   NUM = numel(R);   % Number of nodes
 
+  %%
+  % Read and reshape the input from the CSV if needed into
+  % _R_(1, :) = [ _R1_ ... _R<NUM>_ ]
   if size(R, 1) > 1
     % Workaround for MATLAB's column-major matrix policy:
-    R = reshape(R', 1, NUM);
+    R = reshape(R.', 1, NUM);
+  end
+
+  if NUM > 0
+    for i = 1 : NUM
+      if R(i) <= 0
+        error(argError);
+      end
+    end
+  else
+    error(argError);
+  end
+
+  if verbose == true
+    clc;  % Clean slate if good to go
   end
 
   %% Calling _STRETCH_CHAINLINK_ multiple times

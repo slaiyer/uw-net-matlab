@@ -11,7 +11,6 @@
 % Copyright 2014 Sidharth Iyer (246964@gmail.com)
 
 %% Function signature
-
 function range = attenuate(R, S, T)
 
 %% Input

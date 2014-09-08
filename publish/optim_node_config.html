@@ -1,0 +1,556 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>OPTIM_NODE_CONFIG</title><meta name="generator" content="MATLAB 8.3"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2014-09-05"><meta name="DC.source" content="optim_node_config.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>OPTIM_NODE_CONFIG</h1><!--introduction--><p>Calculates the best volume-optimized node configuration for the given base node coverage radii.</p><p>Examples:</p><pre class="language-matlab">OPTIM_NODE_CONFIG(<span class="string">'test_radii.csv'</span>)
+Optimizes <span class="string">the</span> <span class="string">node</span> <span class="string">configuration</span> <span class="string">for</span> <span class="string">the</span> <span class="string">node</span> <span class="string">radii</span> <span class="string">in</span> <span class="string">test_radii.csv</span>
+</pre><pre class="language-matlab">OPTIM_NODE_CONFIG(<span class="string">'test_radii.csv'</span>, 3)
+Finds <span class="string">the</span> <span class="string">best</span> <span class="string">of</span> <span class="string">3</span> <span class="string">solutions</span> <span class="string">for</span> <span class="string">the</span> <span class="string">node</span> <span class="string">radii</span> <span class="string">in</span> <span class="string">test_radii.csv</span>
+</pre><pre class="language-matlab">OPTIM_NODE_CONFIG(<span class="string">'test_radii.csv'</span>, 1, true)
+Finds <span class="string">1</span> <span class="string">solution</span> <span class="string">for</span> <span class="string">the</span> <span class="string">node</span> <span class="string">radii</span> <span class="string">in</span> <span class="string">test_radii.csv</span> <span class="string">in</span> <span class="string">verbose</span> <span class="string">fashion.</span>
+</pre><p>See also: STRETCH_CHAINLINK, CHAINLINK, ATTENUATE, NODE_CONFIG_VOL</p><p>Copyright 2014 Sidharth Iyer (<a href="mailto:246964@gmail.com">246964@gmail.com</a>)</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Function signature</a></li><li><a href="#3">Input</a></li><li><a href="#6">Output</a></li><li><a href="#7">Checking for malformed arguments</a></li><li><a href="#9">Input parsing and reformatting</a></li><li><a href="#10">Calling <i>STRETCH_CHAINLINK</i> multiple times</a></li><li><a href="#11">Sorting solutions based on optimality</a></li><li><a href="#13">Saving the output to files</a></li></ul></div><h2>Function signature<a name="1"></a></h2><pre class="codeinput"><span class="keyword">function</span> bestN = optim_node_config(inCSV, iters, verbose)
+</pre><h2>Input<a name="3"></a></h2><p><i>inCSV</i>: Comma-separated file with base node coverage radii</p><p><i>iters</i>: (Optional) Number of initial population iterations of the genetic algorithm to seed to select the best solution from</p><p><i>verbose</i>: (Optional) Boolean flag to specify output verbosity</p><h2>Output<a name="6"></a></h2><p><i>bestN</i>(<i>NUM</i>, 3): Best node configuration such that row vector <i>bestN</i>(<i>r</i>, :) = [ <i>Cx</i> <i>Cy</i> <i>Cz</i> ], based on the maximal polyhedral volume <i>V</i> enclosed by it</p><h2>Checking for malformed arguments<a name="7"></a></h2><p>Input is preferred in a comma-delimited sequence of double-precision values without line breaks.</p><p>In the case that multi-line CSV input is provided, and is interpreted with ghost zeros, remove all commas from the end of each line.</p><pre class="codeinput">  argError = <span class="string">'Malformed input arguments. Use "help optim_node_config".'</span>;
+
+  <span class="keyword">switch</span> nargin
+    <span class="keyword">case</span> 1
+      iters = 1;
+      verbose = false;
+    <span class="keyword">case</span> 2
+      iters = uint64(iters);  <span class="comment">% Cast to unsigned 64-bit integer</span>
+      <span class="keyword">if</span> iters &gt; 0
+        verbose = false;
+      <span class="keyword">else</span>
+        error(argError);
+      <span class="keyword">end</span>
+    <span class="keyword">case</span> 3
+      iters = uint64(iters);  <span class="comment">% Cast to unsigned 64-bit integer</span>
+      <span class="keyword">if</span> iters &lt;= 0 || ~islogical(verbose)
+        error(argError);
+      <span class="keyword">end</span>
+    <span class="keyword">otherwise</span>
+      error(argError);
+  <span class="keyword">end</span>
+</pre><h2>Input parsing and reformatting<a name="9"></a></h2><p>Read and reshape the input from the CSV if needed into <i>R</i>(1, :) = [ <i>R1</i> ... <i>R&lt;NUM&gt;</i> ]</p><pre class="codeinput">  R = csvread(inCSV);
+
+  <span class="keyword">if</span> verbose == true
+    <span class="comment">% Clean slate if good to go:</span>
+    close <span class="string">all</span>;
+    clc;
+  <span class="keyword">end</span>
+
+  NUM = numel(R);   <span class="comment">% Number of nodes</span>
+
+  <span class="keyword">if</span> size(R, 1) &gt; 1
+    <span class="comment">% Workaround for MATLAB's column-major matrix policy:</span>
+    R = reshape(R', 1, NUM);
+  <span class="keyword">end</span>
+</pre><h2>Calling <i>STRETCH_CHAINLINK</i> multiple times<a name="10"></a></h2><p><i>STRETCH_CHAINLINK</i> is called as many times as specified in <i>iters</i>, and the best among all optimized solutions is then selected.</p><pre class="codeinput">  N = zeros(NUM, 3, iters);   <span class="comment">% 3D matrix for incoming node configurations</span>
+  V = zeros(iters, 1);        <span class="comment">% Volumes of each incoming node configuration</span>
+
+  <span class="keyword">for</span> i = 1 : iters
+    <span class="keyword">if</span> verbose == false
+      fprintf(<span class="string">'Running GA iteration:\t%d/%d... '</span>, i, iters);
+    <span class="keyword">end</span>
+
+    [ N(:,:,i), V(i) ] = stretch_chainlink(R, verbose);
+  <span class="keyword">end</span>
+</pre><pre class="codeoutput">
+                               Best           Mean      Stall
+Generation      f-count        f(x)           f(x)    Generations
+    1           400            -849          -41.18        0
+    2           600           -2007          -143.4        0
+    3           800           -2221          -278.2        0
+    4          1000           -4084          -569.7        0
+    5          1200           -4999          -839.1        0
+    6          1400           -5051          -784.3        0
+    7          1600           -5051            -863        1
+    8          1800           -5266           -1219        0
+    9          2000           -7567           -1279        0
+   10          2200           -8501           -1367        0
+   11          2400           -9474           -1487        0
+   12          2600           -9474           -1789        1
+   13          2800           -9474           -2374        2
+   14          3000           -9474           -2871        3
+   15          3200           -9851           -3091        0
+   16          3400      -1.042e+04           -3525        0
+   17          3600      -1.058e+04           -3408        0
+   18          3800      -1.228e+04           -4075        0
+   19          4000      -1.236e+04           -4332        0
+   20          4200      -1.316e+04           -4433        0
+   21          4400      -1.316e+04           -4618        1
+   22          4600      -1.342e+04           -4639        0
+   23          4800      -1.342e+04           -4890        1
+   24          5000       -1.39e+04           -5485        0
+   25          5200      -1.416e+04           -5525        0
+   26          5400      -1.416e+04           -6298        1
+   27          5600      -1.416e+04           -6321        2
+   28          5800      -1.416e+04           -6182        0
+   29          6000      -1.416e+04           -6236        1
+   30          6200      -1.419e+04           -6466        0
+
+                               Best           Mean      Stall
+Generation      f-count        f(x)           f(x)    Generations
+   31          6400      -1.432e+04           -7067        0
+   32          6600      -1.432e+04           -7151        0
+   33          6800      -1.447e+04           -7132        0
+   34          7000       -1.45e+04           -6954        0
+   35          7200      -1.464e+04           -6426        0
+   36          7400      -1.478e+04           -6631        0
+   37          7600      -1.496e+04           -6521        0
+   38          7800      -1.496e+04           -5889        1
+   39          8000      -1.506e+04           -5748        0
+   40          8200      -1.507e+04           -5800        0
+   41          8400      -1.507e+04           -5116        1
+   42          8600      -1.507e+04           -5184        2
+   43          8800      -1.507e+04           -5342        3
+   44          9000      -1.507e+04           -5576        4
+   45          9200      -1.507e+04           -5813        5
+   46          9400      -1.507e+04           -5479        6
+   47          9600      -1.507e+04           -5518        7
+   48          9800      -1.507e+04           -5850        8
+   49         10000      -1.507e+04           -6576        9
+   50         10200      -1.507e+04           -6434       10
+   51         10400      -1.507e+04           -6277       11
+   52         10600      -1.507e+04           -5915       12
+   53         10800      -1.507e+04           -6051       13
+   54         11000      -1.507e+04           -5676       14
+   55         11200      -1.507e+04           -5863       15
+   56         11400      -1.507e+04           -5758       16
+   57         11600      -1.525e+04           -5884        0
+   58         11800      -1.525e+04           -6586        1
+   59         12000      -1.525e+04           -6077        2
+   60         12200      -1.525e+04           -6263        3
+
+                               Best           Mean      Stall
+Generation      f-count        f(x)           f(x)    Generations
+   61         12400      -1.525e+04           -5722        4
+   62         12600      -1.525e+04           -6018        5
+   63         12800      -1.525e+04           -5318        6
+   64         13000      -1.525e+04           -5506        7
+   65         13200      -1.525e+04           -5256        8
+   66         13400      -1.525e+04           -5617        9
+   67         13600      -1.525e+04           -5529       10
+   68         13800      -1.525e+04           -5323       11
+   69         14000      -1.525e+04           -5436       12
+   70         14200      -1.525e+04           -5706       13
+   71         14400      -1.525e+04           -5591       14
+   72         14600      -1.525e+04           -5777       15
+   73         14800      -1.525e+04           -6094       16
+   74         15000      -1.525e+04           -5051       17
+   75         15200      -1.525e+04           -5505       18
+   76         15400      -1.525e+04           -6392       19
+   77         15600      -1.525e+04           -5886       20
+   78         15800      -1.525e+04           -5942       21
+   79         16000      -1.525e+04           -5970       22
+   80         16200      -1.525e+04           -6488       23
+   81         16400      -1.525e+04           -6362        0
+   82         16600      -1.525e+04           -6049        1
+   83         16800      -1.525e+04           -6192        2
+   84         17000      -1.525e+04           -6388        3
+   85         17200      -1.525e+04           -5396        4
+   86         17400      -1.525e+04           -5724        5
+   87         17600      -1.525e+04           -5929        6
+   88         17800      -1.525e+04           -6169        7
+   89         18000      -1.525e+04           -6005        8
+   90         18200      -1.525e+04           -5769        9
+
+                               Best           Mean      Stall
+Generation      f-count        f(x)           f(x)    Generations
+   91         18400      -1.525e+04           -5503       10
+   92         18600      -1.525e+04           -5248       11
+   93         18800      -1.525e+04           -5692       12
+   94         19000      -1.525e+04           -6014       13
+   95         19200      -1.525e+04           -6133       14
+   96         19400      -1.525e+04           -5864       15
+   97         19600      -1.525e+04           -6344       16
+   98         19800      -1.525e+04           -6242       17
+   99         20000      -1.525e+04           -6596       18
+  100         20200      -1.525e+04           -6198       19
+  101         20400      -1.525e+04           -6576       20
+  102         20600      -1.525e+04           -6118       21
+  103         20800      -1.525e+04           -5721       22
+  104         21000      -1.525e+04           -6152       23
+  105         21200      -1.525e+04           -5765       24
+  106         21400      -1.525e+04           -5772       25
+  107         21600      -1.525e+04           -5956       26
+Optimization terminated: average change in the fitness value less than options.TolFun.
+Elapsed time is 91.898467 seconds.
+sep = 
+             Node1     Node2     Node3
+             ______    ______    _____
+    Node2    34.979       NaN      NaN
+    Node3    45.991    56.645      NaN
+    Node4    56.991    66.583    71.43
+
+                               Best           Mean      Stall
+Generation      f-count        f(x)           f(x)    Generations
+    1           400           -1656          -42.59        0
+    2           600           -4995          -184.4        0
+    3           800           -6985          -443.3        0
+    4          1000           -6985          -660.2        1
+    5          1200           -8112          -983.8        0
+    6          1400           -8112           -1301        1
+    7          1600           -8112           -1358        2
+    8          1800           -8397           -1426        0
+    9          2000      -1.122e+04           -1523        0
+   10          2200      -1.122e+04           -1619        1
+   11          2400      -1.131e+04           -1664        0
+   12          2600      -1.149e+04           -2277        0
+   13          2800      -1.149e+04           -2207        1
+   14          3000      -1.149e+04           -2773        2
+   15          3200      -1.317e+04           -3264        0
+   16          3400      -1.317e+04           -3913        1
+   17          3600       -1.35e+04           -4303        0
+   18          3800      -1.393e+04           -4238        0
+   19          4000      -1.398e+04           -4979        0
+   20          4200      -1.403e+04           -4909        0
+   21          4400      -1.419e+04           -4900        0
+   22          4600      -1.419e+04           -5424        1
+   23          4800      -1.465e+04           -5670        0
+   24          5000      -1.465e+04           -5981        1
+   25          5200      -1.465e+04           -5820        2
+   26          5400      -1.465e+04           -5729        3
+   27          5600      -1.465e+04           -5832        4
+   28          5800      -1.465e+04           -5790        5
+   29          6000      -1.467e+04           -5632        0
+   30          6200      -1.467e+04           -5647        1
+
+                               Best           Mean      Stall
+Generation      f-count        f(x)           f(x)    Generations
+   31          6400      -1.473e+04           -5557        0
+   32          6600      -1.473e+04           -5614        1
+   33          6800      -1.473e+04           -5519        2
+   34          7000      -1.473e+04           -5197        3
+   35          7200      -1.473e+04           -4742        4
+   36          7400      -1.473e+04           -3919        5
+   37          7600      -1.473e+04           -4641        6
+   38          7800      -1.473e+04           -5184        7
+   39          8000      -1.491e+04           -5599        0
+   40          8200      -1.491e+04           -5600        1
+   41          8400      -1.491e+04           -5349        2
+   42          8600      -1.491e+04           -5776        3
+   43          8800      -1.491e+04           -5853        4
+   44          9000      -1.501e+04           -5783        0
+   45          9200      -1.501e+04           -5905        1
+   46          9400      -1.501e+04           -5873        2
+   47          9600      -1.501e+04           -5974        3
+   48          9800      -1.501e+04           -6348        4
+   49         10000      -1.501e+04           -6605        5
+   50         10200      -1.501e+04           -6773        0
+   51         10400      -1.501e+04           -5956        1
+   52         10600      -1.501e+04           -6385        2
+   53         10800      -1.502e+04           -6004        0
+   54         11000      -1.502e+04           -6047        1
+   55         11200      -1.502e+04           -6501        0
+   56         11400      -1.502e+04           -6948        1
+   57         11600      -1.509e+04           -6568        0
+   58         11800       -1.51e+04           -6318        0
+   59         12000       -1.51e+04           -6199        1
+   60         12200       -1.51e+04           -6475        2
+
+                               Best           Mean      Stall
+Generation      f-count        f(x)           f(x)    Generations
+   61         12400       -1.51e+04           -6893        3
+   62         12600       -1.51e+04           -6290        4
+   63         12800       -1.51e+04           -5879        5
+   64         13000       -1.51e+04           -5913        6
+   65         13200       -1.51e+04           -5940        7
+   66         13400       -1.51e+04           -5840        8
+   67         13600       -1.51e+04           -5926        9
+   68         13800      -1.515e+04           -6016        0
+   69         14000      -1.515e+04           -5884        1
+   70         14200      -1.515e+04           -5865        2
+   71         14400      -1.515e+04           -6410        3
+   72         14600      -1.515e+04           -6248        4
+   73         14800      -1.515e+04           -6051        5
+   74         15000      -1.515e+04           -6352        6
+   75         15200      -1.515e+04           -6549        7
+   76         15400      -1.515e+04           -5959        8
+   77         15600      -1.515e+04           -6094        9
+   78         15800      -1.515e+04           -5496       10
+   79         16000      -1.515e+04           -5762       11
+   80         16200      -1.515e+04           -6252       12
+   81         16400      -1.515e+04           -6517       13
+   82         16600      -1.515e+04           -5664       14
+   83         16800      -1.515e+04           -6334       15
+   84         17000      -1.515e+04           -6369       16
+   85         17200      -1.515e+04           -5680       17
+   86         17400      -1.515e+04           -5826       18
+   87         17600      -1.515e+04           -6099       19
+   88         17800      -1.515e+04           -6069       20
+   89         18000      -1.515e+04           -6026       21
+   90         18200      -1.515e+04           -5691       22
+
+                               Best           Mean      Stall
+Generation      f-count        f(x)           f(x)    Generations
+   91         18400      -1.515e+04           -5730       23
+   92         18600      -1.515e+04           -5623       24
+   93         18800      -1.515e+04           -5843       25
+   94         19000      -1.515e+04           -5510       26
+   95         19200      -1.515e+04           -6001       27
+   96         19400      -1.515e+04           -6460       28
+   97         19600      -1.515e+04           -6955       29
+   98         19800      -1.515e+04           -6741       30
+   99         20000      -1.515e+04           -6269       31
+  100         20200      -1.515e+04           -6513       32
+  101         20400      -1.515e+04           -6499       33
+  102         20600      -1.515e+04           -6243       34
+  103         20800      -1.515e+04           -5911       35
+  104         21000      -1.515e+04           -6122       36
+  105         21200      -1.515e+04           -6310       37
+  106         21400      -1.515e+04           -6823       38
+  107         21600      -1.515e+04           -6947       39
+Optimization terminated: average change in the fitness value less than options.TolFun.
+Elapsed time is 100.365410 seconds.
+sep = 
+             Node1     Node2     Node3 
+             ______    ______    ______
+    Node2    34.965       NaN       NaN
+    Node3    45.968    56.298       NaN
+    Node4    56.989     66.06    69.064
+</pre><img vspace="5" hspace="5" src="optim_node_config_01.png" alt=""> <img vspace="5" hspace="5" src="optim_node_config_02.png" alt=""> <img vspace="5" hspace="5" src="optim_node_config_03.png" alt=""> <h2>Sorting solutions based on optimality<a name="11"></a></h2><p>Sort node configurations based on the descending order of the polyhedral volume enclosed by each:</p><pre class="codeinput">  [ V, rank ] = sort(V, <span class="string">'descend'</span>);
+  N = N(:,:,rank);
+</pre><p>Display sorted solutions if verbosity is required:</p><pre class="codeinput">  <span class="keyword">if</span> verbose == true
+    display(V);
+    display(N);
+
+    <span class="keyword">if</span> iters &gt; 1
+      fprintf(<span class="string">'Iteration-wise '</span>);
+      display(rank);  <span class="comment">% Display iteration rankings</span>
+    <span class="keyword">end</span>
+  <span class="keyword">else</span>
+    node_config_vol(N(:,:,1), R, verbose);  <span class="comment">% Visualize best solution only</span>
+  <span class="keyword">end</span>
+</pre><pre class="codeoutput">V =
+   1.0e+04 *
+    1.5249
+    1.5145
+N(:,:,1) =
+  -11.2889  -17.2829  -21.8597
+   10.4893  -37.5644   -3.4777
+  -14.5961    9.6281   15.2893
+   32.9737   14.9176  -37.7330
+N(:,:,2) =
+   22.3528    7.7590    2.9816
+    6.4303    1.0959   33.3896
+   -5.9696   43.7192   -1.2372
+  -19.6869  -20.2326  -23.4161
+Iteration-wise rank =
+     1
+     2
+</pre><h2>Saving the output to files<a name="13"></a></h2><p>Save the best node configuration to <i>inCSV</i>-optim_node_config.csv:</p><pre class="codeinput">  bestN = N(:,:,1);   <span class="comment">% Save only the best node configuration</span>
+  outN = [ inCSV, <span class="string">'-optim_node_config.csv'</span> ];   <span class="comment">% Append to filename</span>
+  csvwrite(outN, bestN);
+</pre><p>Save the maximal volume achieved to <i>inCSV</i>-optim-vol.txt:</p><pre class="codeinput">  bestV = V(1);       <span class="comment">% Save only the maximal volume</span>
+  outV = [ inCSV, <span class="string">'-optim_vol.txt'</span> ];           <span class="comment">% Append to filename</span>
+  csvwrite(outV, bestV);
+</pre><p>Return the best configuration among the calculated optimized solutions:</p><pre class="codeinput"><span class="keyword">end</span>
+</pre><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2014a</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% OPTIM_NODE_CONFIG
+% Calculates the best volume-optimized node configuration
+% for the given base node coverage radii.
+%
+% Examples:
+%
+%   OPTIM_NODE_CONFIG('test_radii.csv')
+%   Optimizes the node configuration for the node radii in test_radii.csv
+%
+%   OPTIM_NODE_CONFIG('test_radii.csv', 3)
+%   Finds the best of 3 solutions for the node radii in test_radii.csv
+%
+%   OPTIM_NODE_CONFIG('test_radii.csv', 1, true)
+%   Finds 1 solution for the node radii in test_radii.csv in verbose fashion.
+%
+% See also: STRETCH_CHAINLINK, CHAINLINK, ATTENUATE, NODE_CONFIG_VOL
+%
+% Copyright 2014 Sidharth Iyer (246964@gmail.com)
+
+%% Function signature
+
+function bestN = optim_node_config(inCSV, iters, verbose)
+
+%% Input
+% _inCSV_: Comma-separated file with base node coverage radii
+%%
+% _iters_: (Optional) Number of initial population iterations of
+% the genetic algorithm to seed to select the best solution from
+%%
+% _verbose_: (Optional) Boolean flag to specify output verbosity
+
+%% Output
+% _bestN_(_NUM_, 3): Best node configuration such that
+% row vector _bestN_(_r_, :) = [ _Cx_ _Cy_ _Cz_ ],
+% based on the maximal polyhedral volume _V_ enclosed by it
+
+  %% Checking for malformed arguments
+  % Input is preferred in a comma-delimited sequence of
+  % double-precision values without line breaks.
+  %%
+  % In the case that multi-line CSV input is provided,
+  % and is interpreted with ghost zeros,
+  % remove all commas from the end of each line.
+
+  argError = 'Malformed input arguments. Use "help optim_node_config".';
+
+  switch nargin
+    case 1
+      iters = 1;
+      verbose = false;
+    case 2
+      iters = uint64(iters);  % Cast to unsigned 64-bit integer
+      if iters > 0
+        verbose = false;
+      else
+        error(argError);
+      end
+    case 3
+      iters = uint64(iters);  % Cast to unsigned 64-bit integer
+      if iters <= 0 || ~islogical(verbose)
+        error(argError);
+      end
+    otherwise
+      error(argError);
+  end
+
+  %% Input parsing and reformatting
+  % Read and reshape the input from the CSV if needed into
+  % _R_(1, :) = [ _R1_ ... _R<NUM>_ ]
+
+  R = csvread(inCSV);
+
+  if verbose == true
+    % Clean slate if good to go:
+    close all;
+    clc;
+  end
+
+  NUM = numel(R);   % Number of nodes
+
+  if size(R, 1) > 1
+    % Workaround for MATLAB's column-major matrix policy:
+    R = reshape(R', 1, NUM);
+  end
+
+  %% Calling _STRETCH_CHAINLINK_ multiple times
+  % _STRETCH_CHAINLINK_ is called as many times as specified in _iters_,
+  % and the best among all optimized solutions is then selected.
+
+  N = zeros(NUM, 3, iters);   % 3D matrix for incoming node configurations
+  V = zeros(iters, 1);        % Volumes of each incoming node configuration
+
+  for i = 1 : iters
+    if verbose == false
+      fprintf('Running GA iteration:\t%d/%d... ', i, iters);
+    end
+
+    [ N(:,:,i), V(i) ] = stretch_chainlink(R, verbose);
+  end
+
+  %% Sorting solutions based on optimality
+  % Sort node configurations based on the descending order of
+  % the polyhedral volume enclosed by each:
+
+  [ V, rank ] = sort(V, 'descend');
+  N = N(:,:,rank);
+
+  %%
+  % Display sorted solutions if verbosity is required:
+
+  if verbose == true
+    display(V);
+    display(N);
+
+    if iters > 1
+      fprintf('Iteration-wise ');
+      display(rank);  % Display iteration rankings
+    end
+  else
+    node_config_vol(N(:,:,1), R, verbose);  % Visualize best solution only
+  end
+
+  %% Saving the output to files
+  % Save the best node configuration to _inCSV_-optim_node_config.csv:
+
+  bestN = N(:,:,1);   % Save only the best node configuration
+  outN = [ inCSV, '-optim_node_config.csv' ];   % Append to filename
+  csvwrite(outN, bestN);
+
+  %%
+  % Save the maximal volume achieved to _inCSV_-optim-vol.txt:
+
+  bestV = V(1);       % Save only the maximal volume
+  outV = [ inCSV, '-optim_vol.txt' ];           % Append to filename
+  csvwrite(outV, bestV);
+
+%%
+% Return the best configuration among the calculated optimized solutions:
+
+end
+
+##### SOURCE END #####
+--></body></html>
