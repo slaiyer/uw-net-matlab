@@ -62,7 +62,7 @@ function bestN = optim_node_config(inCSV, iters, verbose)
     otherwise
       error(argError);
   end
-  
+
   R = csvread(inCSV);
   NUM = numel(R);   % Number of nodes
 
@@ -87,6 +87,8 @@ function bestN = optim_node_config(inCSV, iters, verbose)
   if verbose == true
     clc;  % Clean slate if good to go
   end
+
+  format compact;   % Eliminate unnecessay newlines in output
 
   %% Calling _STRETCH_CHAINLINK_ multiple times
   % _STRETCH_CHAINLINK_ is called as many times as specified in _iters_,
@@ -114,6 +116,8 @@ function bestN = optim_node_config(inCSV, iters, verbose)
   % Display sorted solutions if verbosity is required:
 
   if verbose == true
+    format long g;
+
     display(V);
     display(N);
 
@@ -138,6 +142,8 @@ function bestN = optim_node_config(inCSV, iters, verbose)
   bestV = V(1);       % Save only the maximal volume
   outV = [ inCSV, '-optim_vol.txt' ];           % Append to filename
   csvwrite(outV, bestV);
+
+  format;   % Restore default output options
 
 %%
 % Return the best configuration among the calculated optimized solutions:

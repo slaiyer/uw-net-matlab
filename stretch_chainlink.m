@@ -45,7 +45,7 @@ function [ N, V ] = stretch_chainlink(R, verbose)
   end
 
   NUM = numel(R);   % Number of nodes
-  
+
   if size(R, 1) > 1
     % Workaround for MATLAB's column-major matrix policy:
     R = reshape(R.', 1, NUM);
@@ -60,6 +60,8 @@ function [ N, V ] = stretch_chainlink(R, verbose)
   else
     error(argError);
   end
+
+  format compact;   % Eliminate unnecessay newlines
 
   %% Setting genetic algorithm options
   % min(R) / sqrt(3) is a conservative setting, ensuring that
@@ -87,10 +89,11 @@ function [ N, V ] = stretch_chainlink(R, verbose)
   options = gaoptimset(oldopts, newopts);   % Overwrite default options
 
   if verbose == true
-    options = gaoptimset(options, ...
-                          'Display', 'iter', ...            % { 'final' }
-                          'PlotFcns', { @gaplotbestf } ...  % { [] }
-                        );
+    options ...
+       = gaoptimset(options, ...
+                    'Display', 'iter', ...  % { 'final' }
+                    'PlotFcns', { @gaplotbestf, @gaplotstopping } ...
+                   );
   end
 
   %% Invoking the genetic algorithm
@@ -151,6 +154,8 @@ function [ N, V ] = stretch_chainlink(R, verbose)
   %%
   % Calculate the node polyhedron volume and plot it in 3D:
   V = node_config_vol(N, R, verbose);
+
+  format;   % Restore default output options
 
 %%
 % Return a volume-optimized configuration for the given number of nodes:
