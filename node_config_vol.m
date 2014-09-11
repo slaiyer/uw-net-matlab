@@ -45,7 +45,7 @@ function V = node_config_vol(N, R, verbose)
     otherwise
       error(argError);
   end
-  
+
   if size(R, 1) > 1
     % Workaround for MATLAB's column-major matrix policy:
     R = reshape(R.', 1, NUM);
