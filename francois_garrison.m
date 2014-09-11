@@ -5,7 +5,7 @@ function range = francois_garrison(T, S, z, pH, f)
 % Examples:
 %   FRANCOIS_GARRISON
 %     Default parameters
-%   FRANCOIS_GARRISON(14, 38.5, 0, 7, 100)
+%   FRANCOIS_GARRISON(14, 38.5, 0, 7, 10)
 %     Mediterranean approximation at surface from Lurton
 %
 % See also ATTENUATE
@@ -17,8 +17,12 @@ function range = francois_garrison(T, S, z, pH, f)
     T = 25;   % degrees Celsius
     S = 35;   % practical salinity units
     z = 10;   % metres
-    pH = 7;
+    pH = 7;   % TODO: Investigate pH input
     f = 10;  % kHz
+  else
+    if nargin ~= 5
+      argError = 'Malformed input arguments: use "help francois_garrison"';
+    end
   end
 
   tic
@@ -51,16 +55,16 @@ function range = francois_garrison(T, S, z, pH, f)
 
   syms R positive;
 
-  % 1. a) Two-way transmission loss:
-  f = symfun(TL == 2 * (20 * log10(R) + alpha * 1e-3 * R), R);
-
-  % 1. b) Two-way transmission loss (more intuitive result?):
-  % f = symfun(TL == 20 * log10(2 * R) + alpha * 1e-3 * 2 * R, R);
+  % 1. Two-way transmission loss:
+  % f = symfun(TL == 2 * (20 * log10(R) + alpha * 1e-3 * R), R);
 
   % 2. One-way transmission loss:
   % f = symfun(TL == 20 * log10(R) + alpha * 1e-3 * R, R);
 
-  range = eval(solve(f, 'Real', true, 'PrincipalValue', true));
+  % range = eval(solve(f, 'Real', true, 'PrincipalValue', true));
+
+  range = eval(solve(TL == 2 * (20 * log10(R) + alpha * 1e-3 * R), ...
+                     R, 'Real', true, 'PrincipalValue', true));
 
   toc
 
@@ -79,11 +83,14 @@ function A2 = calc_A2(T, S, c)
 end
 
 function A3 = calc_A3(T)
-  % Taking Lurton's T < 20 as T <= 20:
-  if T <= 20
+  if T < 20
     A3 = 4.937e-4 - 2.59e-5 * T + 9.11e-7 * T ^ 2 - 1.5e-8 * T ^ 3;
   else
-    A3 = 3.964e-4 - 1.146e-5 * T + 1.45e-7 * T ^ 2 - 6.5e-10 * T ^ 3;
+    if T > 20
+      A3 = 3.964e-4 - 1.146e-5 * T + 1.45e-7 * T ^ 2 - 6.5e-10 * T ^ 3;
+    else
+      A3 = 2.2005e-4;   % Mean value of LHL and RHL at T = 20
+    end
   end
 end
 
