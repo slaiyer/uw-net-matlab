@@ -15,10 +15,11 @@
 % Copyright 2014 Sidharth Iyer (246964@gmail.com)
 
 %% Function signature
-function [ N, V ] = stretch_chainlink(R, verbose)
+function [ N, V ] = stretch_chainlink(TL, verbose)
 
 %% Input
-% _R_: Vector of base node coverage radii
+% _TL_: Vector of acceptable losses in intesity
+% between trasmission and detection
 %%
 % _verbose_: (Optional) Boolean flag to specify output verbosity
 
@@ -44,16 +45,16 @@ function [ N, V ] = stretch_chainlink(R, verbose)
       error(argError);
   end
 
-  NUM = numel(R);   % Number of nodes
+  NUM = numel(TL);   % Number of nodes
 
-  if size(R, 1) > 1
+  if size(TL, 1) > 1
     % Workaround for MATLAB's column-major matrix policy:
-    R = reshape(R.', 1, NUM);
+    TL = reshape(TL.', 1, NUM);
   end
 
   if NUM > 0
     for i = 1 : NUM
-      if R(i) <= 0
+      if TL(i) <= 0
         error(argError);
       end
     end
@@ -64,7 +65,7 @@ function [ N, V ] = stretch_chainlink(R, verbose)
   format compact;   % Eliminate unnecessay newlines
 
   %% Setting genetic algorithm options
-  % min(R) / sqrt(3) is a conservative setting, ensuring that
+  % min(TL) / sqrt(3) is a conservative setting, ensuring that
   % the cubic diagonal of the initial population range will fit
   % in the lowest coverage radius of all nodes.
   %%
@@ -77,7 +78,7 @@ function [ N, V ] = stretch_chainlink(R, verbose)
   % _'Vectorized'_ specifies whether the GA is to be called with
   % multiple individuals passed to it in each iteration or not.
 
-  HALFRANGE = min(R) / (2 * sqrt(3));       % Center roughly around origin
+  HALFRANGE = min(TL) / (2 * sqrt(3));       % Center roughly around origin
 
   oldopts = gaoptimset(@ga);                % Load default options
   newopts = ...
@@ -99,7 +100,7 @@ function [ N, V ] = stretch_chainlink(R, verbose)
   %% Invoking the genetic algorithm
   % Maximize _CHAINLINK_ by minimizing the negative of its score:
 
-  objFunc = @(N) -chainlink(N, R, NUM);     % Create function handle for GA
+  objFunc = @(N) -chainlink(N, TL, NUM);     % Create function handle for GA
 
   if verbose == true
     tic  % Start timer
@@ -119,41 +120,8 @@ function [ N, V ] = stretch_chainlink(R, verbose)
   N = reshape(N, 3, NUM).';
 
   %%
-  % Calculate and map the separation between each pair of nodes:
-
-  if verbose == true
-    sep = NaN(NUM);
-
-    for i = 1 : NUM - 1
-      for j = i + 1 : NUM
-        sep(i,j) = norm(N(i,:) - N(j,:));
-      end
-    end
-
-    labels = cell(1, NUM);  % Row and column headers
-    units = cell(1, NUM);   % Distance units
-
-    for i = 1 : NUM
-      labels{i} = strcat('Node', num2str(i));
-      units{i} = 'm';
-    end
-
-    sep = array2table( ...
-                      sep(1 : NUM - 1, 2 : NUM).', ...
-                      'RowNames', labels(2 : NUM), ...
-                      'VariableNames', labels(1 : NUM - 1) ...
-                     );
-
-    sep.Properties.Description ...
-      = 'Maps the Euclidean distances between each pair of nodes in 3D';
-    sep.Properties.VariableUnits = units(1 : NUM - 1);
-
-    display(sep);
-  end
-
-  %%
   % Calculate the node polyhedron volume and plot it in 3D:
-  V = node_config_vol(N, R, verbose);
+  V = node_config_vol(N, TL, verbose);
 
   format;   % Restore default output options
 

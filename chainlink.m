@@ -10,13 +10,14 @@
 % Copyright 2014 Sidharth Iyer (246964@gmail.com)
 
 %% Function signature
-function volume = chainlink(N, R, NUM)
+function volume = chainlink(N, TL, NUM)
 
 %% Input
 % _N_(_INDIVS_, 3 * _NUM_): Vectorized array of individuals such that
 % _N_(_i_, :) = [ _Cx1_ _Cy1_ _Cz1_ ... _Cx<NUM>_ _Cy<NUM>_ _Cz<NUM>_ ]
 %%
-% _R_(_NUM_): Vector of base node coverage radii
+% _TL_(_NUM_): Vector of acceptable losses in intesity
+% between trasmission and detection
 %%
 % _NUM_: Number of nodes
 
@@ -69,21 +70,24 @@ function volume = chainlink(N, R, NUM)
 
     for f = 1 : numFacets
       for v1 = 1 : numVerts
-        v2 = rem(v1, numVerts) + 1;           % Round robin traversal
+        % TODO: Investigate round-robin system for face coverage
+        v2 = rem(v1, numVerts) + 1;           % Successive edge pairs
         p = [ facets(f,v1); facets(f,v2) ];   % Vertex indices
         n = [ N2(p(1),:); N2(p(2),:) ];       % Node coordinates
-        range = [ R(p(1)); R(p(2)) ];         % Node radii
+        range = [ TL(p(1)); TL(p(2)) ];       % Node radii
+
+        %%
+        % Calculate the separation between two adjacent vertices:
+
+        edge = norm(n(1,:) - n(2,:));           % Euclidean distance
 
         %%
         % Return attenated ranges between the source and target nodes:
         % range = attenuate(range, n, flipud(n));
-        range = attenuate(range, n, flipud(n));
+        range = attenuate(range, n, flipud(n), edge);
 
         %%
-        % Calculate the separation between two adjacent vertices
-        % and the total coverage along their common edge:
-
-        edge = norm(n(1,:) - n(2,:));           % Euclidean distance
+        % Calculate the total coverage along their common edge:
         coverage = range(1) + range(2);         % Sphere packing
 
         % Ensure both nodes are in each other's range:

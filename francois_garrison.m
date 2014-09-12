@@ -1,4 +1,4 @@
-function range = francois_garrison(T, S, z, pH, f)
+function alpha = francois_garrison(T, S, z, pH, f)
 % Calculates anisotropically attenuated node coverage ranges
 % Based on Lurton Sec. 2.3
 %
@@ -25,8 +25,6 @@ function range = francois_garrison(T, S, z, pH, f)
     end
   end
 
-  tic
-
   % Speed of sound:
   c = calc_c(T, S, z);
 
@@ -44,29 +42,8 @@ function range = francois_garrison(T, S, z, pH, f)
   A3 = calc_A3(T);
   P3 = calc_P3(z);
 
-  % Attenuation in dB/km:
-  alpha = calc_zCoeff(z) * calc_alpha(A1, A2, A3, P1, P2, P3, f, f1, f2);
-  display(alpha);
-
-  % Define acceptable loss in intensity in dB:
-  SL = 150;       % Source level: [143,153]
-  DT = 0;         % Detection threshold
-  TL = SL - DT;   % Maximum acceptable trasmission loss
-
-  syms R positive;
-
-  % 1. Two-way transmission loss:
-  % f = symfun(TL == 2 * (20 * log10(R) + alpha * 1e-3 * R), R);
-
-  % 2. One-way transmission loss:
-  % f = symfun(TL == 20 * log10(R) + alpha * 1e-3 * R, R);
-
-  % range = eval(solve(f, 'Real', true, 'PrincipalValue', true));
-
-  range = eval(solve(TL == 2 * (20 * log10(R) + alpha * 1e-3 * R), ...
-                     R, 'Real', true, 'PrincipalValue', true));
-
-  toc
+  % Attenuation in dB/m:
+  alpha = calc_alpha(A1, A2, A3, P1, P2, P3, f, f1, f2) * 1e-3;
 
 end
 
@@ -119,11 +96,11 @@ end
 function zCoeff = calc_zCoeff(z)
   H = [ 0 500 1000 1500 2000 2500 3000 3500 4000 4500 5000 5500 6000 ];
 
-  P2_H = [ 1 0.93 0.87 0.81 0.75 0.7 0.64 0.6 0.55 0.51 0.47 0.43 0.4 ];
-  zCoeff = interp1(H, P2_H, z, 'pchip', 'extrap');
+  % P2_H = [ 1 0.93 0.87 0.81 0.75 0.7 0.64 0.6 0.55 0.51 0.47 0.43 0.4 ];
+  % zCoeff = interp1(H, P2_H, z, 'pchip');
 
-  % A_H = [ 1 0.97 0.93 0.9 0.86 0.83 0.79 0.76 0.73 0.69 0.66 0.62 0.59 ];
-  % zCoeff = interp1(H, A_H, z, 'pchip', 'extrap');
+  A_H = [ 1 0.97 0.93 0.9 0.86 0.83 0.79 0.76 0.73 0.69 0.66 0.62 0.59 ];
+  zCoeff = interp1(H, A_H, z, 'pchip');
 
   % plot(H, P2_H, H, A_H);
   % set(legend('P_2(H)', 'A(H)'));

@@ -11,13 +11,14 @@
 % Copyright 2014 Sidharth Iyer (246964@gmail.com)
 
 %% Function signature
-function V = node_config_vol(N, R, verbose)
+function V = node_config_vol(N, TL, verbose)
 
 %% Input
 % _N_(_NUM_, 3): Optimized node configuration such that
 % _N_(_i_, :) = [ _Cx_ _Cy_ _Cz_ ]
 %%
-% _R_(_NUM_): Vector of base node coverage radii
+% _TL_(_NUM_): Vector of acceptable losses in intesity
+% between trasmission and detection
 %%
 % _verbose_: (Optional) Boolean flag to specify output verbosity
 
@@ -29,7 +30,7 @@ function V = node_config_vol(N, R, verbose)
 
   argError = 'Malformed input arguments: use "help node_config_vol"';
 
-  NUM = numel(R);   % Number of nodes
+  NUM = numel(TL);   % Number of nodes
 
   switch nargin
     case 2
@@ -46,14 +47,14 @@ function V = node_config_vol(N, R, verbose)
       error(argError);
   end
 
-  if size(R, 1) > 1
+  if size(TL, 1) > 1
     % Workaround for MATLAB's column-major matrix policy:
-    R = reshape(R.', 1, NUM);
+    TL = reshape(TL.', 1, NUM);
   end
 
   if NUM > 0
     for i = 1 : NUM
-      if R(i) <= 0
+      if TL(i) <= 0
         error(argError);
       end
     end
@@ -71,7 +72,7 @@ function V = node_config_vol(N, R, verbose)
   if verbose == true
     %% Displaying the 3D representation of the solution
 
-    NUM = numel(R);   % Number of nodes
+    NUM = numel(TL);   % Number of nodes
 
     figTitle = [ 'Volume-optimized ', num2str(NUM), '-node configuration' ];
     figure('Name', figTitle, 'NumberTitle', 'on');
@@ -103,21 +104,21 @@ function V = node_config_vol(N, R, verbose)
     scatter3(N(:,1), N(:,2), N(:,3), '.');
     hold on;  % Continue with current figure
 
-    for i = 1 : NUM
-      r = R(i);
-      [ x, y, z ] = sphere(32);
-      x = x * r + N(i,1);
-      y = y * r + N(i,2);
-      z = z * r + N(i,3);
+    % for i = 1 : NUM
+    %   r = TL(i);
+    %   [ x, y, z ] = sphere(32);
+    %   x = x * r + N(i,1);
+    %   y = y * r + N(i,2);
+    %   z = z * r + N(i,3);
 
-      surface( ...
-              x, y, z, ...
-              'EdgeColor', green, ...
-              'EdgeAlpha', 0.2, ...
-              'FaceColor', green, ...
-              'FaceAlpha', 0.1 ...
-             );
-    end
+    %   surface( ...
+    %           x, y, z, ...
+    %           'EdgeColor', green, ...
+    %           'EdgeAlpha', 0.2, ...
+    %           'FaceColor', green, ...
+    %           'FaceAlpha', 0.1 ...
+    %          );
+    % end
 
     %%
     % 2. b) Display the polyhedral volume enclosed by _N_:
