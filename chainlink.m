@@ -83,8 +83,7 @@ function volume = chainlink(N, TL, NUM)
 
         %%
         % Return attenated ranges between the source and target nodes:
-        % range = attenuate(range, n, flipud(n));
-        range = attenuate(range, n, flipud(n), edge);
+        range = attenuate(n, range, edge);
 
         %%
         % Calculate the total coverage along their common edge:
