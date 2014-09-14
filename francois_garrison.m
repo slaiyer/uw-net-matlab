@@ -13,17 +13,17 @@ function alpha = francois_garrison(T, S, z, pH, f)
 % Copyright 2014 Sidharth Iyer (246964@gmail.com)
 
   % Default parameters:
-  if nargin == 0
-    T = 25;   % degrees Celsius
-    S = 35;   % practical salinity units
-    z = 10;   % metres
-    pH = 7;   % TODO: Investigate pH input
-    f = 10;  % kHz
-  else
-    if nargin ~= 5
-      argError = 'Malformed input arguments: use "help francois_garrison"';
-    end
-  end
+  % if nargin == 0
+  %   T = 25;   % degrees Celsius
+  %   S = 35;   % practical salinity units
+  %   z = 10;   % metres
+  %   pH = 8;   % TODO: Investigate pH input
+  %   f = 10;   % kHz
+  % else
+  %   if nargin ~= 5
+  %     argError = 'Malformed input arguments: use "help francois_garrison"';
+  %   end
+  % end
 
   % Speed of sound:
   c = calc_c(T, S, z);
@@ -62,12 +62,10 @@ end
 function A3 = calc_A3(T)
   if T < 20
     A3 = 4.937e-4 - 2.59e-5 * T + 9.11e-7 * T ^ 2 - 1.5e-8 * T ^ 3;
+  elseif T > 20
+    A3 = 3.964e-4 - 1.146e-5 * T + 1.45e-7 * T ^ 2 - 6.5e-10 * T ^ 3;
   else
-    if T > 20
-      A3 = 3.964e-4 - 1.146e-5 * T + 1.45e-7 * T ^ 2 - 6.5e-10 * T ^ 3;
-    else
-      A3 = 2.2005e-4;   % Mean value of LHL and RHL at T = 20
-    end
+    A3 = 2.2005e-4;   % Mean value of LHL and RHL at T = 20
   end
 end
 

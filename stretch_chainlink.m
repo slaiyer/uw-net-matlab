@@ -4,10 +4,10 @@
 %
 % Examples:
 %
-%   STRETCH_CHAINLINK([ 12 23 34 45 ])
-%   Optimizes the node configuration for the given node radii in the vector.
+%   STRETCH_CHAINLINK(143:0.5:155, true)
+%   Optimizes the node configuration for the given source levels in the vector.
 %
-%   STRETCH_CHAINLINK([ 12 23 34 45 ], true)
+%   STRETCH_CHAINLINK(143:0.5:155, true)
 %   Optimizes the node configuration in a verbose fashion.
 %
 % See also: OPTIM_NODE_CONFIG, CHAINLINK, ATTENUATE, NODE_CONFIG_VOL
@@ -15,10 +15,10 @@
 % Copyright 2014 Sidharth Iyer (246964@gmail.com)
 
 %% Function signature
-function [ N, V ] = stretch_chainlink(TL, verbose)
+function [ N, V ] = stretch_chainlink(maxTL, verbose)
 
 %% Input
-% _TL_: Vector of acceptable losses in intesity
+% _maxTL_: Vector of acceptable losses in intesity
 % between trasmission and detection
 %%
 % _verbose_: (Optional) Boolean flag to specify output verbosity
@@ -45,16 +45,16 @@ function [ N, V ] = stretch_chainlink(TL, verbose)
       error(argError);
   end
 
-  NUM = numel(TL);   % Number of nodes
+  NUM = numel(maxTL);   % Number of nodes
 
-  if size(TL, 1) > 1
+  if size(maxTL, 1) > 1
     % Workaround for MATLAB's column-major matrix policy:
-    TL = reshape(TL.', 1, NUM);
+    maxTL = reshape(maxTL.', 1, NUM);
   end
 
   if NUM > 0
     for i = 1 : NUM
-      if TL(i) <= 0
+      if maxTL(i) <= 0
         error(argError);
       end
     end
@@ -65,7 +65,7 @@ function [ N, V ] = stretch_chainlink(TL, verbose)
   format compact;   % Eliminate unnecessay newlines
 
   %% Setting genetic algorithm options
-  % min(TL) / sqrt(3) is a conservative setting, ensuring that
+  % min(maxTL) / sqrt(3) is a conservative setting, ensuring that
   % the cubic diagonal of the initial population range will fit
   % in the lowest coverage radius of all nodes.
   %%
@@ -78,7 +78,7 @@ function [ N, V ] = stretch_chainlink(TL, verbose)
   % _'Vectorized'_ specifies whether the GA is to be called with
   % multiple individuals passed to it in each iteration or not.
 
-  HALFRANGE = min(TL) / (2 * sqrt(3));       % Center roughly around origin
+  HALFRANGE = 309.5 / (2 * sqrt(3));       % Center roughly around origin
 
   oldopts = gaoptimset(@ga);                % Load default options
   newopts = ...
@@ -100,7 +100,7 @@ function [ N, V ] = stretch_chainlink(TL, verbose)
   %% Invoking the genetic algorithm
   % Maximize _CHAINLINK_ by minimizing the negative of its score:
 
-  objFunc = @(N) -chainlink(N, TL, NUM);     % Create function handle for GA
+  objFunc = @(N) -chainlink(N, maxTL, NUM);   % Create function handle for GA
 
   if verbose == true
     tic  % Start timer
@@ -120,8 +120,41 @@ function [ N, V ] = stretch_chainlink(TL, verbose)
   N = reshape(N, 3, NUM).';
 
   %%
+  % Calculate and map the separation between each pair of nodes:
+
+  if verbose == true
+    sep = NaN(NUM);
+
+    for i = 1 : NUM - 1
+      for j = i + 1 : NUM
+        sep(i,j) = norm(N(i,:) - N(j,:));
+      end
+    end
+
+    labels = cell(1, NUM);  % Row and column headers
+    units = cell(1, NUM);   % Distance units
+
+    for i = 1 : NUM
+      labels{i} = strcat('Node', num2str(i));
+      units{i} = 'm';
+    end
+
+    sep = array2table( ...
+                      sep(1 : NUM - 1, 2 : NUM).', ...
+                      'RowNames', labels(2 : NUM), ...
+                      'VariableNames', labels(1 : NUM - 1) ...
+                     );
+
+    sep.Properties.Description ...
+      = 'Maps the Euclidean distances between each pair of nodes in 3D';
+    sep.Properties.VariableUnits = units(1 : NUM - 1);
+
+    display(sep);
+  end
+
+  %%
   % Calculate the node polyhedron volume and plot it in 3D:
-  V = node_config_vol(N, TL, verbose);
+  V = node_config_vol(N, maxTL, verbose);
 
   format;   % Restore default output options
 

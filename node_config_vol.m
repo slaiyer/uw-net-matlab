@@ -11,7 +11,7 @@
 % Copyright 2014 Sidharth Iyer (246964@gmail.com)
 
 %% Function signature
-function V = node_config_vol(N, TL, verbose)
+function V = node_config_vol(N, maxTL, verbose)
 
 %% Input
 % _N_(_NUM_, 3): Optimized node configuration such that
@@ -30,7 +30,7 @@ function V = node_config_vol(N, TL, verbose)
 
   argError = 'Malformed input arguments: use "help node_config_vol"';
 
-  NUM = numel(TL);   % Number of nodes
+  NUM = numel(maxTL);   % Number of nodes
 
   switch nargin
     case 2
@@ -47,14 +47,14 @@ function V = node_config_vol(N, TL, verbose)
       error(argError);
   end
 
-  if size(TL, 1) > 1
+  if size(maxTL, 1) > 1
     % Workaround for MATLAB's column-major matrix policy:
-    TL = reshape(TL.', 1, NUM);
+    maxTL = reshape(maxTL.', 1, NUM);
   end
 
   if NUM > 0
     for i = 1 : NUM
-      if TL(i) <= 0
+      if maxTL(i) <= 0
         error(argError);
       end
     end
@@ -72,7 +72,7 @@ function V = node_config_vol(N, TL, verbose)
   if verbose == true
     %% Displaying the 3D representation of the solution
 
-    NUM = numel(TL);   % Number of nodes
+    NUM = numel(maxTL);   % Number of nodes
 
     figTitle = [ 'Volume-optimized ', num2str(NUM), '-node configuration' ];
     figure('Name', figTitle, 'NumberTitle', 'on');
@@ -105,7 +105,7 @@ function V = node_config_vol(N, TL, verbose)
     hold on;  % Continue with current figure
 
     % for i = 1 : NUM
-    %   r = TL(i);
+    %   r = maxTL(i);
     %   [ x, y, z ] = sphere(32);
     %   x = x * r + N(i,1);
     %   y = y * r + N(i,2);

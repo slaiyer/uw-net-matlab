@@ -11,88 +11,60 @@
 % Copyright 2014 Sidharth Iyer (246964@gmail.com)
 
 %% Function signature
-function range = attenuate(N, TL, edge)
+function range = attenuate(N, maxTL, edge)
 
 %% Input
 %%
-% _TL_: Column vector of maximum acceptable loss in intensity
-% between transmission and detection
-%%
 % _N_: Node data for node 1 such that
 % _N_(i, :) = [ _Cx_ _Cy_ _Cz_ ]
+%%
+% _maxTL_: Column vector of maximum acceptable loss in intensity
+% between transmission and detection
 %%
 % _edge_: Euclidean distance between nodes
 
 %% Output
 % _range_: Column vector of attenuated ranges in the target directions
 
-  % Test input for stub:
-  % if nargin == 0
-  %   N = 1e2 * [ 0, 10, 20; 30, 40, 50 ];
-  %   TL = [ 150; 140 ];              % 185.756
-  %   edge = norm(N(1,:) - N(2,:));   % Edge length
-  % end
+  % numPoints = ceil(edge) / 100;   % Space intermediate points ~1m apart
+  numPoints = 2;  % Integration granularity
+  numPaths = 2;   % 1 for node communication, 2 for echo-based detection
+  edgeStep = edge / numPoints;    % Step increment size
+  z = linspace(N(1,3), N(2,3), numPoints + 1);  % Intermediate points
+  range = zeros(size(maxTL));
 
-  % tic
+  % Start from first node:
+  for i = 1 : numPoints + 1
+    range(1) = range(1) + edgeStep;   % Increment old range by step length
 
-  % numPoints = ceil(edge) + 1;
-  % z = linspace(N(1,3), N(2,3), numPoints);
-  % alphas = zeros(numPoints, 1);
-
-  numPoints = 10;
-  z = linspace(N(1,3), N(2,3), numPoints);
-  alphas = zeros(numPoints, 1);
-
-  for i = 1 : numPoints
-    alphas(i) = francois_garrison(25, 35, z(i), 7, 10);
+    % Test new range against given maximum acceptable losses:
+    if maxTL(1) < numPaths ...
+                  * (20 * log10(range(1)) ...
+                     + francois_garrison(25, 35, z(i), 8, 10) * range(1))
+      range(1) = range(1) - edgeStep;   % Undo last increment if overshot
+      break
+    end
   end
 
-  % display(alphas.');
+  % Start from other node:
+  for j = numPoints + 1 : -1 : 1
+    % Short circuit if unltimate goal is satisfied
+    % Comment out entire conditional block if overlapping is required
+    % if j <= numPoints && range(1) + range(2) > edge
+    if range(1) + range(2) > edge
+      return
+    end
 
-  % TODO: Investigate TL == 20 * log10(R/R_1m) + alpha * R
-  % syms R real positive;
+    range(2) = range(2) + edgeStep;   % Increment and test new range
 
-  attenuation = trapz(alphas, z);
-
-  % 1 for one-way transmission losses (node communications)
-  % 2 for two-way transmission losses (echo-based detection)
-  paths = 2;
-
-  % range = zeros(size(TL));
-
-  % range = abs(real(X)) or abs(X)?
-  % lambertw(1 / 20) or lambertw(-1 / 20)?
-
-  % range = abs(real((20 ...
-  %                   * lambertw(1 / 20 ...
-  %                              * (10 .^ (TL / paths) ...
-  %                                 * attenuation ^ 20) .^ (1 / 20) ...
-  %                              * log(10))) ...
-  %                   / (attenuation * log(10))));
-
-  range = abs(real((8.68589 ...
-                    * lambertw(0.115129 ...
-                               * (10 .^ (TL / paths) ...
-                                  * attenuation ^ 20) .^ (1 / 20))) ...
-                    / attenuation));
-
-  % f = symfun(paths * (20 * log10(R) + attenuation * R), R);
-
-  % range(1) = eval(solve(TL(1) == f, 'Real', true, 'PrincipalValue', true));
-  % range(2) = eval(solve(TL(2) == f, 'Real', true, 'PrincipalValue', true));
-
-  % A = solve(TL(1) == 2 * (20 * log10(R) + attenuation * R), ...
-  %                       'Real', true, 'PrincipalValue', true)
-  % B = solve(TL(2) == 2 * (20 * log10(R) + attenuation * R), ...
-  %                       'Real', true, 'PrincipalValue', true);
-
-  % pretty(A);
-  % pretty(B);
-
-  % range(1) = eval(A);
-  % range(2) = eval(B);
-
-  % toc
+    % Test new range against given maximum acceptable losses:
+    if maxTL(2) < numPaths ...
+                  * (20 * log10(range(2)) ...
+                     + francois_garrison(25, 35, z(i), 8, 10) * range(2))
+      range(2) = range(2) - edgeStep;   % Undo last increment if overshot
+      break
+    end
+  end
 
   %%
   % Return the attenuated ranges for the given sources:
