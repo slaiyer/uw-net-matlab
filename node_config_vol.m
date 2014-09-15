@@ -86,49 +86,115 @@ function V = node_config_vol(N, maxTL, verbose)
     % 1. Display the polyhedral volume enclosed by _N_:
 
     subplot(1, 2, 1);
-    scatter3(N(:,1), N(:,2), N(:,3), '.');
-    hold on;  % Continue with current figure
-    tetramesh(DT, 'EdgeColor', meshRed, 'FaceColor', faceOrange);
     title('Node polyhedron');
     xlabel('X');
     ylabel('Y');
     zlabel('Z');
+
+    scatter3(N(:,1), N(:,2), N(:,3), '.');
+    drawnow;
+    hold on;  % Continue with current figure
+
+    [ FBtri, FBpoints ] = freeBoundary(DT);
+    [ ~, ~, IB ] = intersect(N, FBpoints, 'rows');
+    Xbn = FBpoints(IB,:);
+    iIB(IB) = 1 : length(IB);
+    trisurf(iIB(FBtri), Xbn(:,1), Xbn(:,2), Xbn(:,3), ...
+            'EdgeColor', meshRed, 'FaceColor', faceOrange);
+
     axis equal;
     axis vis3d;
+
+    drawnow;
+    hold on;
 
     %%
     % 2. a) Display translucent spheres depicting
     %  the coverage volume of each node:
 
     subplot(1, 2, 2);
-    scatter3(N(:,1), N(:,2), N(:,3), '.');
-    hold on;  % Continue with current figure
-
-    % for i = 1 : NUM
-    %   r = maxTL(i);
-    %   [ x, y, z ] = sphere(32);
-    %   x = x * r + N(i,1);
-    %   y = y * r + N(i,2);
-    %   z = z * r + N(i,3);
-
-    %   surface( ...
-    %           x, y, z, ...
-    %           'EdgeColor', green, ...
-    %           'EdgeAlpha', 0.2, ...
-    %           'FaceColor', green, ...
-    %           'FaceAlpha', 0.1 ...
-    %          );
-    % end
-
-    %%
-    % 2. b) Display the polyhedral volume enclosed by _N_:
-
-    hold on;
-    tetramesh(DT, 'EdgeColor', meshRed, 'FaceColor', faceOrange);
     title('Node coverages');
     xlabel('X');
     ylabel('Y');
     zlabel('Z');
+
+    scatter3(N(:,1), N(:,2), N(:,3), '.');
+    drawnow;
+    hold on;  % Continue with current figure
+
+    [ FBtri, FBpoints ] = freeBoundary(DT);
+    [ ~, ~, IB ] = intersect(N, FBpoints, 'rows');
+    Xbn = FBpoints(IB,:);
+    iIB(IB) = 1 : length(IB);
+    trisurf(iIB(FBtri), Xbn(:,1), Xbn(:,2), Xbn(:,3), ...
+            'EdgeColor', meshRed, 'FaceColor', faceOrange);
+
+    drawnow;
+    hold on;
+
+    numPaths = 2;
+    edgeStep = 5;
+    edgeV = [ 0, 0, 0 ];
+    edgeUV = [ 0, 0, 0 ];
+    z = [ 0 0 0 ];
+    range = 0;
+    alpha = 0;
+
+    for i = 1 : NUM
+      ptCloud = zeros(2 * NUM, 3);
+
+      for j = 1 : NUM
+        if j == i
+          continue
+        end
+
+        edgeV = N(j,:) - N(i,:);
+        edgeUV = edgeStep * edgeV / norm(edgeV);
+        range = 0;
+        alpha = 0;
+
+        while true
+          range = range + edgeStep;
+          z = N(i,:) + range * edgeUV;
+          alpha = francois_garrison(25, 35, z(3), 8, 10);
+
+          if maxTL(i) < numPaths * (20 * log10(range) + alpha * range)
+            ptCloud(j,:) = N(i,:) + (range - edgeStep) * edgeUV;
+            break
+          end
+        end
+
+        edgeUV = -edgeUV;
+        range = 0;
+        alpha = 0;
+
+        while true
+          range = range + edgeStep;
+          z = N(i,:) + range * edgeUV;
+          alpha = francois_garrison(25, 35, z(3), 8, 10);
+
+          if maxTL(i) < numPaths * (20 * log10(range) + alpha * range)
+            ptCloud(j + NUM,:) = N(i,:) + (range - edgeStep) * edgeUV;
+            break
+          end
+        end
+      end
+
+      ptCloud(i + NUM,:) = [];
+      ptCloud(i,:) = [];
+
+      DT = delaunayTriangulation(ptCloud);
+      trisurf(convexHull(DT), ptCloud(:,1), ptCloud(:,2), ptCloud(:,3), ...
+              'EdgeColor', green, ...
+              'EdgeAlpha', 1 / NUM, ...
+              'FaceColor', green, ...
+              'FaceAlpha', 1 / (2 * NUM) ...
+             );
+
+      drawnow;
+      hold on;
+    end
+
     axis equal;
     axis vis3d;
 

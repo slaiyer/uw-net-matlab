@@ -27,15 +27,15 @@ function range = attenuate(N, maxTL, edge)
 % _range_: Column vector of attenuated ranges in the target directions
 
   % numPoints = ceil(edge) / 100;   % Space intermediate points ~1m apart
-  numPoints = 2;  % Integration granularity
   numPaths = 2;   % 1 for node communication, 2 for echo-based detection
+  numPoints = 2;  % Integration granularity
   edgeStep = edge / numPoints;    % Step increment size
   z = linspace(N(1,3), N(2,3), numPoints + 1);  % Intermediate points
   range = zeros(size(maxTL));
 
   % Start from first node:
   for i = 1 : numPoints + 1
-    range(1) = range(1) + edgeStep;   % Increment old range by step length
+    range(1) = range(1) + edgeStep;     % Increment old range
 
     % Test new range against given maximum acceptable losses:
     if maxTL(1) < numPaths ...
@@ -55,7 +55,7 @@ function range = attenuate(N, maxTL, edge)
       return
     end
 
-    range(2) = range(2) + edgeStep;   % Increment and test new range
+    range(2) = range(2) + edgeStep;     % Increment old range
 
     % Test new range against given maximum acceptable losses:
     if maxTL(2) < numPaths ...
