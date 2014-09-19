@@ -86,10 +86,6 @@ function V = node_config_vol(N, maxTL, verbose)
     % 1. Display the polyhedral volume enclosed by _N_:
 
     subplot(1, 2, 1);
-    title('Node polyhedron');
-    xlabel('X');
-    ylabel('Y');
-    zlabel('Z');
 
     scatter3(N(:,1), N(:,2), N(:,3), '.');
     drawnow;
@@ -101,11 +97,15 @@ function V = node_config_vol(N, maxTL, verbose)
     iIB(IB) = 1 : length(IB);
     trisurf(iIB(FBtri), Xbn(:,1), Xbn(:,2), Xbn(:,3), ...
             'EdgeColor', meshRed, 'FaceColor', faceOrange);
+    drawnow;
 
+    title('Node polyhedron');
+    xlabel('X');
+    ylabel('Y');
+    zlabel('Z');
     axis equal;
     axis vis3d;
 
-    drawnow;
     hold on;
 
     %%
@@ -113,10 +113,6 @@ function V = node_config_vol(N, maxTL, verbose)
     %  the coverage volume of each node:
 
     subplot(1, 2, 2);
-    title('Node coverages');
-    xlabel('X');
-    ylabel('Y');
-    zlabel('Z');
 
     scatter3(N(:,1), N(:,2), N(:,3), '.');
     drawnow;
@@ -127,18 +123,18 @@ function V = node_config_vol(N, maxTL, verbose)
     Xbn = FBpoints(IB,:);
     iIB(IB) = 1 : length(IB);
     trisurf(iIB(FBtri), Xbn(:,1), Xbn(:,2), Xbn(:,3), ...
-            'EdgeColor', meshRed, 'FaceColor', faceOrange);
+            'EdgeColor', meshRed, 'FaceColor', faceOrange, ...
+            'EdgeAlpha', 1, 'FaceAlpha', 1);
 
     drawnow;
     hold on;
 
     numPaths = 2;
-    edgeStep = 5;
+    edgeStep = 10;
     edgeV = [ 0, 0, 0 ];
-    edgeUV = [ 0, 0, 0 ];
-    z = [ 0 0 0 ];
+    edgeStepV = [ 0, 0, 0 ];
     range = 0;
-    alpha = 0;
+    point = [ 0 0 0 ];
 
     for i = 1 : NUM
       ptCloud = zeros(2 * NUM, 3);
@@ -149,52 +145,62 @@ function V = node_config_vol(N, maxTL, verbose)
         end
 
         edgeV = N(j,:) - N(i,:);
-        edgeUV = edgeStep * edgeV / norm(edgeV);
+        edgeStepV = edgeStep * edgeV / norm(edgeV);
         range = 0;
-        alpha = 0;
+        point = N(i,:);
 
         while true
           range = range + edgeStep;
-          z = N(i,:) + range * edgeUV;
-          alpha = francois_garrison(25, 35, z(3), 8, 10);
+          point = point + edgeStepV;
 
-          if maxTL(i) < numPaths * (20 * log10(range) + alpha * range)
-            ptCloud(j,:) = N(i,:) + (range - edgeStep) * edgeUV;
+          if maxTL(i) < numPaths ...
+                        * (20 * log10(range) ...
+                           + francois_garrison(25, 35, point(3), 8, 10) ...
+                             * range)
+            ptCloud(j,:) = point - edgeStepV;
             break
           end
         end
 
-        edgeUV = -edgeUV;
+        % Calculate attenuation in opposite direction:
+        edgeStepV = -edgeStepV;
         range = 0;
-        alpha = 0;
+        point = N(i,:);
 
         while true
           range = range + edgeStep;
-          z = N(i,:) + range * edgeUV;
-          alpha = francois_garrison(25, 35, z(3), 8, 10);
+          point = point + edgeStepV;
 
-          if maxTL(i) < numPaths * (20 * log10(range) + alpha * range)
-            ptCloud(j + NUM,:) = N(i,:) + (range - edgeStep) * edgeUV;
+          if maxTL(i) < numPaths ...
+                        * (20 * log10(range) ...
+                           + francois_garrison(25, 35, point(3), 8, 10) ...
+                             * range)
+            ptCloud(j + NUM,:) = point - edgeStepV;
             break
           end
         end
       end
 
+      % Remove reflexive mappings:
       ptCloud(i + NUM,:) = [];
       ptCloud(i,:) = [];
 
-      DT = delaunayTriangulation(ptCloud);
-      trisurf(convexHull(DT), ptCloud(:,1), ptCloud(:,2), ptCloud(:,3), ...
+      trisurf(convexHull(delaunayTriangulation(ptCloud)), ...
+              ptCloud(:,1), ptCloud(:,2), ptCloud(:,3), ...
               'EdgeColor', green, ...
-              'EdgeAlpha', 1 / NUM, ...
               'FaceColor', green, ...
-              'FaceAlpha', 1 / (2 * NUM) ...
+              'EdgeAlpha', 0, ...
+              'FaceAlpha', 0.2 ...
              );
 
       drawnow;
       hold on;
     end
 
+    title('Node coverages');
+    xlabel('X');
+    ylabel('Y');
+    zlabel('Z');
     axis equal;
     axis vis3d;
 

@@ -78,13 +78,32 @@ function [ N, V ] = stretch_chainlink(maxTL, verbose)
   % _'Vectorized'_ specifies whether the GA is to be called with
   % multiple individuals passed to it in each iteration or not.
 
-  HALFRANGE = 309.5 / (2 * sqrt(3));       % Center roughly around origin
+  %%
+  % Inscribe initial population range cube in an octant of the sphere
+  % formed by the minimum range at sea level among all nodes
+  minTL = min(maxTL);   % [143,155]
+  numPaths = 2;
+  range = 0;
+  alpha = francois_garrison(25, 35, 0, 8, 10);
+
+  while true
+    range = range + 1;
+
+    if minTL < numPaths * (20 * log10(range) + alpha * range)
+      range = range - 1;
+      break
+    end
+  end
+
+  halfRange = range / (2 * sqrt(3));        % Center roughly around origin
 
   oldopts = gaoptimset(@ga);                % Load default options
   newopts = ...
     struct( ...
             'TolFun',       1e-4, ...                       % { 1e-6 }
-            'PopInitRange', [ -HALFRANGE; HALFRANGE ], ...  % { [ -10; 10 ] }
+            ... % TODO: Implement floor and ceiling limits on node z-coordinates
+            ... % 'PopInitRange', [ -halfRange; halfRange ], ...
+            'PopInitRange', [ 0; 2 * halfRange ], ...  % { [ -10; 10 ] }
             'Vectorized',   'on' ...                        % { 'off' }
           );
   options = gaoptimset(oldopts, newopts);   % Overwrite default options

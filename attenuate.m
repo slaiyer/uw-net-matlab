@@ -48,8 +48,8 @@ function range = attenuate(N, maxTL, edge)
 
   % Start from other node:
   for j = numPoints + 1 : -1 : 1
-    % Short circuit if unltimate goal is satisfied
-    % Comment out entire conditional block if overlapping is required
+    % Short-circuit if ultimate goal (complete edge coverage) is satisfied
+    % Skip entire conditional block if overlapping is required
     % if j <= numPoints && range(1) + range(2) > edge
     if range(1) + range(2) > edge
       return
