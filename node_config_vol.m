@@ -96,7 +96,7 @@ function V = node_config_vol(N, maxTL, verbose)
     Xbn = FBpoints(IB,:);
     iIB(IB) = 1 : length(IB);
     trisurf(iIB(FBtri), Xbn(:,1), Xbn(:,2), Xbn(:,3), ...
-            'EdgeColor', meshRed, 'FaceColor', faceOrange);
+            'EdgeColor', meshRed, 'FaceColor', faceOrange, 'FaceAlpha', 0.5);
     drawnow;
 
     title('Node polyhedron');
@@ -118,23 +118,13 @@ function V = node_config_vol(N, maxTL, verbose)
     drawnow;
     hold on;  % Continue with current figure
 
-    [ FBtri, FBpoints ] = freeBoundary(DT);
-    [ ~, ~, IB ] = intersect(N, FBpoints, 'rows');
-    Xbn = FBpoints(IB,:);
-    iIB(IB) = 1 : length(IB);
     trisurf(iIB(FBtri), Xbn(:,1), Xbn(:,2), Xbn(:,3), ...
-            'EdgeColor', meshRed, 'FaceColor', faceOrange, ...
-            'EdgeAlpha', 1, 'FaceAlpha', 1);
-
+            'EdgeColor', meshRed, 'FaceColor', faceOrange);
     drawnow;
     hold on;
 
     numPaths = 2;
     edgeStep = 10;
-    edgeV = [ 0, 0, 0 ];
-    edgeStepV = [ 0, 0, 0 ];
-    range = 0;
-    point = [ 0 0 0 ];
 
     for i = 1 : NUM
       ptCloud = zeros(2 * NUM, 3);
