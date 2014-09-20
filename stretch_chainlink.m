@@ -36,9 +36,13 @@ function [ N, V ] = stretch_chainlink(maxTL, verbose)
 
   switch nargin
     case 1
-      verbose = false;
+      if isa(maxTL, 'double')
+        verbose = false;
+      else
+        error(argError);
+      end
     case 2
-      if ~islogical(verbose)
+      if ~isa(maxTL, 'double') || ~islogical(verbose)
         error(argError);
       end
     otherwise
@@ -158,8 +162,7 @@ function [ N, V ] = stretch_chainlink(maxTL, verbose)
       units{i} = 'm';
     end
 
-    sep = array2table( ...
-                      sep(1 : NUM - 1, 2 : NUM).', ...
+    sep = array2table(sep(1 : NUM - 1, 2 : NUM).', ...
                       'RowNames', labels(2 : NUM), ...
                       'VariableNames', labels(1 : NUM - 1) ...
                      );
