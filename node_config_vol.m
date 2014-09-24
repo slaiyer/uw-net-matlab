@@ -123,11 +123,11 @@ function V = node_config_vol(N, maxTL, verbose)
     drawnow;
     hold on;
 
-    numPaths = 2;
-    edgeStep = 10;
+    edgeStep = 100;
 
     for i = 1 : NUM
-      ptCloud = zeros(2 * NUM, 3);
+      ptCloud1 = zeros(2 * NUM, 3);
+      ptCloud2 = zeros(2 * NUM, 3);
 
       for j = 1 : NUM
         if j == i
@@ -139,15 +139,49 @@ function V = node_config_vol(N, maxTL, verbose)
         range = 0;
         point = N(i,:);
 
+        % Calculate node communication ranges:
+        % while true
+        %   range = range + edgeStep;
+        %   point = point + edgeStepV;
+
+        %   if maxTL(i) < 20 * log10(range) ...
+        %                   + francois_garrison(25, 35, point(3), 8, 10) ...
+        %                     * range
+        %     ptCloud1(j,:) = point - edgeStepV;
+        %     break
+        %   end
+        % end
+
+        % % Calculate attenuation in opposite direction:
+        % edgeStepV = -edgeStepV;
+        % range = 0;
+        % point = N(i,:);
+
+        % while true
+        %   range = range + edgeStep;
+        %   point = point + edgeStepV;
+
+        %   if maxTL(i) < 20 * log10(range) ...
+        %                   + francois_garrison(25, 35, point(3), 8, 10) ...
+        %                     * range
+        %     ptCloud1(j + NUM,:) = point - edgeStepV;
+        %     break
+        %   end
+        % end
+
+        % edgeStepV = -edgeStepV;
+        % range = 0;
+        % point = N(i,:);
+
+        % Calculate echo-based detection ranges:
         while true
           range = range + edgeStep;
           point = point + edgeStepV;
 
-          if maxTL(i) < numPaths ...
-                        * (20 * log10(range) ...
-                           + francois_garrison(25, 35, point(3), 8, 10) ...
-                             * range)
-            ptCloud(j,:) = point - edgeStepV;
+          if maxTL(i) < 2 * (20 * log10(range) ...
+                             + francois_garrison(25, 35, point(3), 8, 10) ...
+                               * range)
+            ptCloud2(j,:) = point - edgeStepV;
             break
           end
         end
@@ -161,26 +195,37 @@ function V = node_config_vol(N, maxTL, verbose)
           range = range + edgeStep;
           point = point + edgeStepV;
 
-          if maxTL(i) < numPaths ...
-                        * (20 * log10(range) ...
-                           + francois_garrison(25, 35, point(3), 8, 10) ...
-                             * range)
-            ptCloud(j + NUM,:) = point - edgeStepV;
+          if maxTL(i) < 2 * (20 * log10(range) ...
+                             + francois_garrison(25, 35, point(3), 8, 10) ...
+                               * range)
+            ptCloud2(j + NUM,:) = point - edgeStepV;
             break
           end
         end
       end
 
+      % Display node communication ranges:
       % Remove reflexive mappings:
-      ptCloud(i + NUM,:) = [];
-      ptCloud(i,:) = [];
+      % ptCloud1(i + NUM,:) = [];
+      % ptCloud1(i,:) = [];
 
-      trisurf(convexHull(delaunayTriangulation(ptCloud)), ...
-              ptCloud(:,1), ptCloud(:,2), ptCloud(:,3), ...
-              'EdgeColor', green, ...
-              'FaceColor', green, ...
+      % trisurf(convexHull(delaunayTriangulation(ptCloud1)), ...
+      %         ptCloud1(:,1), ptCloud1(:,2), ptCloud1(:,3), ...
+      %         'EdgeAlpha', 0, ...
+      %         'FaceAlpha', 0.01, ...
+      %         'FaceColor', green ...
+      %        );
+
+      % Display echo-based detection ranges:
+      % Remove reflexive mappings:
+      ptCloud2(i + NUM,:) = [];
+      ptCloud2(i,:) = [];
+
+      trisurf(convexHull(delaunayTriangulation(ptCloud2)), ...
+              ptCloud2(:,1), ptCloud2(:,2), ptCloud2(:,3), ...
               'EdgeAlpha', 0, ...
-              'FaceAlpha', 0.2 ...
+              'FaceAlpha', 0.1, ...
+              'FaceColor', green ...  % meshRed when displaying both ranges
              );
 
       drawnow;
