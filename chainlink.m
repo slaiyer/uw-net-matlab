@@ -32,7 +32,7 @@ function volume = chainlink(N, TL, NUM)
 
   INDIVS = size(N, 1);        % Number of incoming individuals
   volume = zeros(INDIVS, 1);  % Column vector for vectorized scores
-  overlapFraction = 0;        % Overlap along edge; only for sphere packing
+  overlapFraction = 0.1;        % Overlap along edge; only for sphere packing
 
   %% Iterating over each individual in the vectorized input
 
