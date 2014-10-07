@@ -88,7 +88,7 @@ function bestN = optim_node_config(inCSV, iters, verbose)
     clc;  % Clean slate if good to go
   end
 
-  format compact;   % Eliminate unnecessay newlines in output
+  format compact;   % Eliminate unnecessary newlines in output
 
   %% Calling _STRETCH_CHAINLINK_ multiple times
   % _STRETCH_CHAINLINK_ is called as many times as specified in _iters_,

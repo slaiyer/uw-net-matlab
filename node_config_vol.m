@@ -123,10 +123,10 @@ function V = node_config_vol(N, maxTL, verbose)
     drawnow;
     hold on;
 
-    edgeStep = 100;
+    edgeStep = 1;
 
     for i = 1 : NUM
-      ptCloud1 = zeros(2 * NUM, 3);
+      % ptCloud1 = zeros(2 * NUM, 3);
       ptCloud2 = zeros(2 * NUM, 3);
 
       for j = 1 : NUM
