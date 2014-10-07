@@ -32,7 +32,9 @@ function volume = chainlink(N, TL, NUM)
 
   INDIVS = size(N, 1);        % Number of incoming individuals
   volume = zeros(INDIVS, 1);  % Column vector for vectorized scores
-  overlapFraction = 0.1;        % Overlap along edge; only for sphere packing
+  % Overlap fraction for total face coverage of equilateral triangle:
+  % 2 * edge / sqrt(3) - edge == 0.1547005383792516 * edge
+  overlapFraction = 0.155;        % Overlap along edge; only for sphere packing
 
   %% Iterating over each individual in the vectorized input
 
