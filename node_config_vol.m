@@ -78,8 +78,8 @@ function V = node_config_vol(N, maxTL, verbose)
     figure('Name', figTitle, 'NumberTitle', 'on');
 
     % Plot colours
-    meshRed = [ 1 0.5 0.5 ];
-    faceOrange = [ 1 0.95 0.8 ];
+    red = [ 1 0.5 0.5 ];
+    orange = [ 1 0.95 0.8 ];
     green = [ 0.5 1 0.5 ];
 
     %%
@@ -96,7 +96,7 @@ function V = node_config_vol(N, maxTL, verbose)
     Xbn = FBpoints(IB,:);
     iIB(IB) = 1 : length(IB);
     trisurf(iIB(FBtri), Xbn(:,1), Xbn(:,2), Xbn(:,3), ...
-            'EdgeColor', meshRed, 'FaceColor', faceOrange, 'FaceAlpha', 0.5);
+            'EdgeColor', red, 'FaceColor', orange, 'FaceAlpha', 0.75);
     drawnow;
 
     title('Node polyhedron');
@@ -119,15 +119,51 @@ function V = node_config_vol(N, maxTL, verbose)
     hold on;  % Continue with current figure
 
     trisurf(iIB(FBtri), Xbn(:,1), Xbn(:,2), Xbn(:,3), ...
-            'EdgeColor', meshRed, 'FaceColor', faceOrange);
+            'EdgeColor', red, 'FaceColor', orange);
     drawnow;
     hold on;
 
     edgeStep = 1;
+    rubikV = [
+               [ -1, -1, -1 ];
+               [ -1, -1,  0 ];
+               [ -1, -1,  1 ];
+               [ -1,  0, -1 ];
+               [ -1,  0,  0 ];
+               [ -1,  0,  1 ];
+               [ -1,  1, -1 ];
+               [ -1,  1,  0 ];
+               [ -1,  1,  1 ];
+               [  0, -1, -1 ];
+               [  0, -1,  0 ];
+               [  0, -1,  1 ];
+               [  0,  0, -1 ];
+               [  0,  0,  1 ];
+               [  0,  1, -1 ];
+               [  0,  1,  0 ];
+               [  0,  1,  1 ];
+               [  1, -1, -1 ];
+               [  1, -1,  0 ];
+               [  1, -1,  1 ];
+               [  1,  0, -1 ];
+               [  1,  0,  0 ];
+               [  1,  0,  1 ];
+               [  1,  1, -1 ];
+               [  1,  1,  0 ];
+               [  1,  1,  1 ];
+             ];
+    cardinals = size(rubikV, 1);
+    
+    for i = 1 : cardinals
+      rubikV(i,:) = edgeStep * rubikV(i,:) / norm(rubikV(i,:));
+    end
 
     for i = 1 : NUM
       % ptCloud1 = zeros(2 * NUM, 3);
-      ptCloud2 = zeros(2 * NUM, 3);
+      ptCloud2 = zeros(2 * NUM + cardinals, 3);
+      range = 0;
+      point = N(i,:);
+      absorption = 0;
 
       for j = 1 : NUM
         if j == i
@@ -136,17 +172,15 @@ function V = node_config_vol(N, maxTL, verbose)
 
         edgeV = N(j,:) - N(i,:);
         edgeStepV = edgeStep * edgeV / norm(edgeV);
-        range = 0;
-        point = N(i,:);
 
         % Calculate node communication ranges:
         % while true
         %   range = range + edgeStep;
         %   point = point + edgeStepV;
+        %   absorption = absorption ...
+        %                + francois_garrison(25, 35, point(3), 8, 10) * edgeStep;
 
-        %   if maxTL(i) < 20 * log10(range) ...
-        %                   + francois_garrison(25, 35, point(3), 8, 10) ...
-        %                     * range
+        %   if maxTL(i) < 20 * log10(range) + absorption
         %     ptCloud1(j,:) = point - edgeStepV;
         %     break
         %   end
@@ -156,14 +190,15 @@ function V = node_config_vol(N, maxTL, verbose)
         % edgeStepV = -edgeStepV;
         % range = 0;
         % point = N(i,:);
+        % absorption = 0;
 
         % while true
         %   range = range + edgeStep;
         %   point = point + edgeStepV;
+        %   absorption = absorption ...
+        %                + francois_garrison(25, 35, point(3), 8, 10) * edgeStep;
 
-        %   if maxTL(i) < 20 * log10(range) ...
-        %                   + francois_garrison(25, 35, point(3), 8, 10) ...
-        %                     * range
+        %   if maxTL(i) < 20 * log10(range) + absorption
         %     ptCloud1(j + NUM,:) = point - edgeStepV;
         %     break
         %   end
@@ -172,15 +207,16 @@ function V = node_config_vol(N, maxTL, verbose)
         % edgeStepV = -edgeStepV;
         % range = 0;
         % point = N(i,:);
+        % absorption = 0;
 
         % Calculate echo-based detection ranges:
         while true
           range = range + edgeStep;
           point = point + edgeStepV;
+          absorption = absorption ...
+                       + francois_garrison(25, 35, point(3), 8, 10) * edgeStep;
 
-          if maxTL(i) < 2 * (20 * log10(range) ...
-                             + francois_garrison(25, 35, point(3), 8, 10) ...
-                               * range)
+          if maxTL(i) < 2 * (20 * log10(range) + absorption)
             ptCloud2(j,:) = point - edgeStepV;
             break
           end
@@ -190,15 +226,35 @@ function V = node_config_vol(N, maxTL, verbose)
         edgeStepV = -edgeStepV;
         range = 0;
         point = N(i,:);
+        absorption = 0;
 
         while true
           range = range + edgeStep;
           point = point + edgeStepV;
+          absorption = absorption ...
+                       + francois_garrison(25, 35, point(3), 8, 10) * edgeStep;
 
-          if maxTL(i) < 2 * (20 * log10(range) ...
-                             + francois_garrison(25, 35, point(3), 8, 10) ...
-                               * range)
+          if maxTL(i) < 2 * (20 * log10(range) + absorption)
             ptCloud2(j + NUM,:) = point - edgeStepV;
+            break
+          end
+        end
+      end
+      
+      for j = 1 : cardinals
+        range = 0;
+        point = N(i,:);
+        absorption = 0;
+        edgeStepV = rubikV(j,:);
+        
+        while true
+          range = range + edgeStep;
+          point = point + edgeStepV;
+          absorption = absorption ...
+                       + francois_garrison(25, 35, point(3), 8, 10) * edgeStep;
+
+          if maxTL(i) < 2 * (20 * log10(range) + absorption)
+            ptCloud2(2 * NUM + j,:) = point - edgeStepV;
             break
           end
         end
@@ -209,24 +265,24 @@ function V = node_config_vol(N, maxTL, verbose)
       % ptCloud1(i + NUM,:) = [];
       % ptCloud1(i,:) = [];
 
-      % trisurf(convexHull(delaunayTriangulation(ptCloud1)), ...
-      %         ptCloud1(:,1), ptCloud1(:,2), ptCloud1(:,3), ...
-      %         'EdgeAlpha', 0, ...
-      %         'FaceAlpha', 0.01, ...
-      %         'FaceColor', green ...
-      %        );
+      % [ FBtri, FBpoints ] = freeBoundary(delaunayTriangulation(ptCloud1));
+      % [ ~, ~, IB ] = intersect(ptCloud1, FBpoints, 'rows');
+      % Xbn = FBpoints(IB,:);
+      % iIB(IB) = 1 : length(IB);
+      % trisurf(iIB(FBtri), Xbn(:,1), Xbn(:,2), Xbn(:,3), ...
+      %         'EdgeAlpha', 0, 'FaceAlpha', 0.01, 'FaceColor', red);
 
       % Display echo-based detection ranges:
       % Remove reflexive mappings:
       ptCloud2(i + NUM,:) = [];
       ptCloud2(i,:) = [];
 
-      trisurf(convexHull(delaunayTriangulation(ptCloud2)), ...
-              ptCloud2(:,1), ptCloud2(:,2), ptCloud2(:,3), ...
-              'EdgeAlpha', 0, ...
-              'FaceAlpha', 0.1, ...
-              'FaceColor', green ...  % meshRed when displaying both ranges
-             );
+      [ FBtri, FBpoints ] = freeBoundary(delaunayTriangulation(ptCloud2));
+      [ ~, ~, IB ] = intersect(ptCloud2, FBpoints, 'rows');
+      Xbn = FBpoints(IB,:);
+      iIB(IB) = 1 : length(IB);
+      trisurf(iIB(FBtri), Xbn(:,1), Xbn(:,2), Xbn(:,3), ...
+              'EdgeAlpha', 0, 'FaceAlpha', 0.1, 'FaceColor', green);
 
       drawnow;
       hold on;
