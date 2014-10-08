@@ -52,6 +52,12 @@ function volume = chainlink(N, TL, NUM)
     % Workaround for MATLAB's column-major matrix policy:
     N2 = reshape(N(i,:), 3, NUM).';
 
+%     if state.Generation == 0
+%       for j = 1 : NUM
+%         N2(j,3) = 3000 + randi(6000);
+%       end
+%     end
+
     %% Calculating the volume of the point cloud polyhedron
     % Use Delaunay triangulation to create a tetrahedral mesh,
     % and find the facets and volume of the convex hull over it.

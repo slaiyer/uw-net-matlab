@@ -100,6 +100,30 @@ function [ N, V ] = stretch_chainlink(maxTL, verbose)
   end
 
   halfRange = range / (2 * sqrt(3));        % Center roughly around origin
+  UB = Inf(1, 3 * NUM);
+  LB = -UB;
+  % initPopRange = repmat([ -halfRange; halfRange ], 1, 3 * NUM);
+  initPop = zeros(200, 75);
+  
+  for i = 3 : 3 : 3 * NUM
+    LB(i) = 3000;    
+    UB(i) = 9000;
+    
+    % initPopRange(:,i) = initPopRange(:,i) + (LB(i) + UB(i)) / 2;
+  end
+  
+  midPoint = (LB(i) + UB(i)) / 2;
+  intRange = floor([ -halfRange, halfRange ]);
+  
+  for i = 1 : 200
+    for j = 1 : 3 * NUM
+      if rem(j, 3) == 0
+        initPop(i,j) = randi(midPoint + intRange);
+      else
+        initPop(i,j) = randi(intRange);
+      end
+    end
+  end
 
   oldopts = gaoptimset(@ga);                % Load default options
   newopts = ...
@@ -107,17 +131,21 @@ function [ N, V ] = stretch_chainlink(maxTL, verbose)
             'TolFun',       1e-4, ...                       % { 1e-6 }
             ... % TODO: Implement floor and ceiling limits on node z-coordinates
             ... % 'PopInitRange', [ -halfRange; halfRange ], ...
-            'PopInitRange', [ 0; 2 * halfRange ], ...  % { [ -10; 10 ] }
+            ... 'PopInitRange', initPopRange, ...  % { [ -10; 10 ] }
+            'InitialPopulation', initPop, ...
+            'Generations', 100 * NUM, ...
+            ... 'CreationFcn', @gacreationuniform, ...
+            'MutationFcn', @mutationadaptfeasible, ...
             'Vectorized',   'on' ...                        % { 'off' }
           );
   options = gaoptimset(oldopts, newopts);   % Overwrite default options
 
   if verbose == true
     options ...
-       = gaoptimset(options, ...
-                    'Display', 'iter', ...  % { 'final' }
-                    'PlotFcns', { @gaplotbestf, @gaplotstopping } ...
-                   );
+      = gaoptimset(options, ...
+                   'Display', 'iter', ...  % { 'final' }
+                   'PlotFcns', { @gaplotbestf, @gaplotstopping } ...
+                  );
   end
 
   %% Invoking the genetic algorithm
@@ -129,7 +157,8 @@ function [ N, V ] = stretch_chainlink(maxTL, verbose)
     tic  % Start timer
   end
 
-  [ N, ~, ~, ~, ~, ~ ] = ga(objFunc, 3 * NUM, options);
+  [ N, ~, ~, ~, ~, ~ ] = ga(objFunc, 3 * NUM, [], [], [], [], ...
+                            LB, UB, [], options);
 
   if verbose == true
     toc  % Poll timer

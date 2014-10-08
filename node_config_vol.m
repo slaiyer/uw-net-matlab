@@ -123,7 +123,7 @@ function V = node_config_vol(N, maxTL, verbose)
     drawnow;
     hold on;
 
-    edgeStep = 1;
+    edgeStep = 10;
     rubikV = [
                [ -1, -1, -1 ];
                [ -1, -1,  0 ];
