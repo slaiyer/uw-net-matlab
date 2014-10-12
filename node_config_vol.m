@@ -27,7 +27,6 @@ function V = node_config_vol(N, maxTL, verbose)
 
   %%
   % Check for malformed input:
-
   argError = 'Malformed input arguments: use "help node_config_vol"';
 
   NUM = numel(maxTL);   % Number of nodes
@@ -65,7 +64,6 @@ function V = node_config_vol(N, maxTL, verbose)
   %%
   % Use Delaunay triangulation to create and display the tetrahedral
   % mesh for the polyhedral volume enclosed by the node configuration:
-
   DT = delaunayTriangulation(N);
   [ ~, V ] = convexHull(DT);
 
@@ -84,7 +82,6 @@ function V = node_config_vol(N, maxTL, verbose)
 
     %%
     % 1. Display the polyhedral volume enclosed by _N_:
-
     subplot(1, 2, 1);
 
     scatter3(N(:,1), N(:,2), N(:,3), '.');
@@ -111,7 +108,6 @@ function V = node_config_vol(N, maxTL, verbose)
     %%
     % 2. a) Display translucent spheres depicting
     %  the coverage volume of each node:
-
     subplot(1, 2, 2);
 
     scatter3(N(:,1), N(:,2), N(:,3), '.');
@@ -298,4 +294,6 @@ function V = node_config_vol(N, maxTL, verbose)
     hold off;
   end
 
+%%
+% Return the volume of the convex hull of the point cloud:
 end

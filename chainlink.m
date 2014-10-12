@@ -10,7 +10,7 @@
 % Copyright 2014 Sidharth Iyer (246964@gmail.com)
 
 %% Function signature
-function volume = chainlink(N, TL, NUM)
+function volume = chainlink(N, NUM, TL, bounds)
 
 %% Input
 % _N_(_INDIVS_, 3 * _NUM_): Vectorized array of individuals such that
@@ -38,32 +38,20 @@ function volume = chainlink(N, TL, NUM)
 
   %% Iterating over each individual in the vectorized input
 
-  for i = 1 : INDIVS
-  %
-    % For option 3:
+  parfor i = 1 : INDIVS
     inferior = false;   % Flag for current individual's feasibility status
-  %}
 
     %%
     % Reformat each individual into a convenient 2D matrix
     % Reshape _N_(1, :) as _N2_(_NUM_, 3),
     % such that _N2_(_i_, :) = [ _Cx_ _Cy_ _Cz_ ]
-
-    % Workaround for MATLAB's column-major matrix policy:
-    N2 = reshape(N(i,:), 3, NUM).';
-
-%     if state.Generation == 0
-%       for j = 1 : NUM
-%         N2(j,3) = 3000 + randi(6000);
-%       end
-%     end
+    N2 = reshape(N(i,:), NUM, 3);
 
     %% Calculating the volume of the point cloud polyhedron
     % Use Delaunay triangulation to create a tetrahedral mesh,
     % and find the facets and volume of the convex hull over it.
 
-    DT = delaunayTriangulation(N2);
-    [ facets, volume(i) ] = convexHull(DT);
+    [ facets, volume(i) ] = convhull(N2);
 
     %% Checking for constraint violation
     % Ensure that there are no gaps in coverage on any edge of any facet.
@@ -78,7 +66,6 @@ function volume = chainlink(N, TL, NUM)
 
     for f = 1 : numFacets
       for v1 = 1 : numVerts
-        % TODO: Investigate round-robin system for face coverage
         v2 = rem(v1, numVerts) + 1;           % Successive edge pairs
         p = [ facets(f,v1); facets(f,v2) ];   % Vertex indices
         n = [ N2(p(1),:); N2(p(2),:) ];       % Node coordinates
@@ -97,9 +84,6 @@ function volume = chainlink(N, TL, NUM)
         % Calculate the total coverage along their common edge:
         coverage = range(1) + range(2);         % Sphere packing
 
-        % Ensure both nodes are in each other's range:
-        % coverage = min(range(1), range(2));   % Two-way communication
-
         overlap = coverage - edge;
         minOverlap = edge * overlapFraction;
 
@@ -109,45 +93,26 @@ function volume = chainlink(N, TL, NUM)
         % it easily offsets the linear increase in penalty.
 
         if overlap < minOverlap
-          %%
-          % Option 1: Split the gap in edge coverage between
-          % the two nodes proportionately and calculate
-          % the volume deficits, the sum of which is the penalty.
-        %{
-          gap = minOverlap - overlap;
-          deficit = range * gap / coverage;
-          penalty = (range(1) + deficit(1)) ^ 3 - range(1) ^ 3 ...
-                    + (range(2) + deficit(2)) ^ 3 - range(2) ^ 3;
-
-          volume(i) = volume(i) - penalty;
-        %}
 
           %%
-          % Option 2: Halve the score for each gap in edge coverage:
-        %{
-          % volume(i) = volume(i) / 2;
-        %}
-
-          %%
-          % Option 3: Reset the score to zero as soon as
+          % Reset the score to zero as soon as
           % the first edge gap is found, and deem
           % the current individual inferior.
-        %
           volume(i) = 0;
 
           % Escape inferior individual's loop _(1/3)_:
           inferior = true;
           break
-        %}
+        else
+          penalty = volume(i) / NUM;
+
+          for j = 1 : NUM
+            if N2(j,3) < bounds(1) || N2(j,3) > bounds(2)
+              volume(i) = volume(i) - penalty;
+            end
+          end
         end
       end
-  %{
-    % For options 1 and 2:
-    end
-  %}
-
-  %
-    % For option 3:
 
       % Escape inferior individual's loop _(2/3)_:
       if inferior == true
@@ -159,10 +124,8 @@ function volume = chainlink(N, TL, NUM)
     if inferior == true
       continue
     end
-  %}
   end
 
 %%
 % Return the score vector for the input individuals:
-
 end

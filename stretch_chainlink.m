@@ -31,7 +31,6 @@ function [ N, V ] = stretch_chainlink(maxTL, verbose)
 
   %%
   % Check for malformed inout:
-
   argError = 'Malformed input arguments: use "help stretch_chainlink"';
 
   switch nargin
@@ -84,7 +83,7 @@ function [ N, V ] = stretch_chainlink(maxTL, verbose)
 
   %%
   % Inscribe initial population range cube in an octant of the sphere
-  % formed by the minimum range at sea level among all nodes
+  % formed by the minimum range at sea level among all nodes:
   minTL = min(maxTL);   % [143,155]
   numPaths = 2;
   range = 0;
@@ -99,43 +98,18 @@ function [ N, V ] = stretch_chainlink(maxTL, verbose)
     end
   end
 
-  halfRange = range / (2 * sqrt(3));        % Center roughly around origin
-  UB = Inf(1, 3 * NUM);
-  LB = -UB;
-  % initPopRange = repmat([ -halfRange; halfRange ], 1, 3 * NUM);
-  initPop = zeros(200, 75);
-  
-  for i = 3 : 3 : 3 * NUM
-    LB(i) = 3000;    
-    UB(i) = 9000;
-    
-    % initPopRange(:,i) = initPopRange(:,i) + (LB(i) + UB(i)) / 2;
-  end
-  
-  midPoint = (LB(i) + UB(i)) / 2;
-  intRange = floor([ -halfRange, halfRange ]);
-  
-  for i = 1 : 200
-    for j = 1 : 3 * NUM
-      if rem(j, 3) == 0
-        initPop(i,j) = randi(midPoint + intRange);
-      else
-        initPop(i,j) = randi(intRange);
-      end
-    end
-  end
+  bounds = [ 3000; 9000 ];
+  popInitRange = ones(2, 3 * NUM) * range / (2 * sqrt(3));
+  popInitRange(1,:) = -popInitRange(1,:);
+  popInitRange(:,2 * NUM + 1:3 * NUM) = popInitRange(:,2 * NUM + 1:3 * NUM) ...
+                                        + mean(bounds);
 
   oldopts = gaoptimset(@ga);                % Load default options
   newopts = ...
     struct( ...
             'TolFun',       1e-4, ...                       % { 1e-6 }
-            ... % TODO: Implement floor and ceiling limits on node z-coordinates
-            ... % 'PopInitRange', [ -halfRange; halfRange ], ...
-            ... 'PopInitRange', initPopRange, ...  % { [ -10; 10 ] }
-            'InitialPopulation', initPop, ...
-            'Generations', 100 * NUM, ...
-            ... 'CreationFcn', @gacreationuniform, ...
-            'MutationFcn', @mutationadaptfeasible, ...
+            'PopInitRange', popInitRange, ...
+            'Generations',  100 * NUM, ...
             'Vectorized',   'on' ...                        % { 'off' }
           );
   options = gaoptimset(oldopts, newopts);   % Overwrite default options
@@ -144,21 +118,23 @@ function [ N, V ] = stretch_chainlink(maxTL, verbose)
     options ...
       = gaoptimset(options, ...
                    'Display', 'iter', ...  % { 'final' }
-                   'PlotFcns', { @gaplotbestf, @gaplotstopping } ...
+                   'PlotFcns', { @gaplotbestf, ...
+                                 @gaplotbestindiv, ...
+                                 @gaplotstopping } ...
                   );
   end
 
   %% Invoking the genetic algorithm
   % Maximize _CHAINLINK_ by minimizing the negative of its score:
+  objFunc = @(N) -chainlink(N, NUM, maxTL, bounds);   % Create function handle for GA
 
-  objFunc = @(N) -chainlink(N, maxTL, NUM);   % Create function handle for GA
+  poolchain = parpool([ 1, 200 ]);
 
   if verbose == true
     tic  % Start timer
   end
 
-  [ N, ~, ~, ~, ~, ~ ] = ga(objFunc, 3 * NUM, [], [], [], [], ...
-                            LB, UB, [], options);
+  N = ga(objFunc, 3 * NUM, options);
 
   if verbose == true
     toc  % Poll timer
@@ -167,13 +143,10 @@ function [ N, V ] = stretch_chainlink(maxTL, verbose)
   %% Processing the genetic algrithm output
   % Reshape _N_(1, 3 * _NUM_) as _N_(_NUM_, 3),
   % such that _N_(_i_, :) = [ _Cx_ _Cy_ _Cz_ ]
-
-  % Workaround for MATLAB's column-major matrix policy:
-  N = reshape(N, 3, NUM).';
+  N = reshape(N, NUM, 3);
 
   %%
   % Calculate and map the separation between each pair of nodes:
-
   if verbose == true
     sep = NaN(NUM);
 
@@ -208,8 +181,8 @@ function [ N, V ] = stretch_chainlink(maxTL, verbose)
   V = node_config_vol(N, maxTL, verbose);
 
   format;   % Restore default output options
+  delete(poolchain);
 
 %%
 % Return a volume-optimized configuration for the given number of nodes:
-
 end

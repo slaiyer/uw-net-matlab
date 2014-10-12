@@ -26,7 +26,7 @@ function range = attenuate(N, maxTL, edge)
 %% Output
 % _range_: Column vector of attenuated ranges in the target directions
 
-  numPoints = 2;   % Integration granularity
+  numPoints = 10;   % Integration granularity
   % numPoints = ceil(edge);       % Space intermediate points ~1m apart
   numPaths = 2;     % 1 for node communication, 2 for echo-based detection
   edgeStep = edge / numPoints;  % Step increment size
@@ -71,7 +71,6 @@ function range = attenuate(N, maxTL, edge)
     end
   end
 
-  %%
-  % Return the attenuated ranges for the given sources:
-
+%%
+% Return the attenuated ranges for the given sources:
 end
