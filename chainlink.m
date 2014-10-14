@@ -32,85 +32,62 @@ function volume = chainlink(N, NUM, TL, bounds)
 
   INDIVS = size(N, 1);        % Number of incoming individuals
   volume = zeros(INDIVS, 1);  % Column vector for vectorized scores
+
   % Overlap fraction for total face coverage of equilateral triangle:
   % 2 * edge / sqrt(3) - edge == 0.1547005383792516 * edge
-  overlapFraction = 0.155;        % Overlap along edge; only for sphere packing
+  overlapFraction = 0.155;    % Overlap factor along each edge
 
   %% Iterating over each individual in the vectorized input
 
-  parfor i = 1 : INDIVS
+  parfor ind = 1 : INDIVS
     inferior = false;   % Flag for current individual's feasibility status
 
     %%
     % Reformat each individual into a convenient 2D matrix
     % Reshape _N_(1, :) as _N2_(_NUM_, 3),
     % such that _N2_(_i_, :) = [ _Cx_ _Cy_ _Cz_ ]
-    N2 = reshape(N(i,:), NUM, 3);
+    N2 = reshape(N(ind, :), NUM, 3);
 
     %% Calculating the volume of the point cloud polyhedron
-    % Use Delaunay triangulation to create a tetrahedral mesh,
-    % and find the facets and volume of the convex hull over it.
-
-    [ facets, volume(i) ] = convhull(N2);
+    % Compute the facets and volume of the convex hull over the point cloud:
+    [ facets, volume(ind) ] = convhull(N2);
 
     %% Checking for constraint violation
     % Ensure that there are no gaps in coverage on any edge of any facet.
     % Edge coverage is considered to be complete if the coverage ranges of
-    % both nodes at the involved adjacent vertices overlap or at least meet
-    % at some point on their common edge.
+    % both nodes at the involved adjacent vertices overlap to
+    % at least the specified extent.
     %%
     % Enumerate and iterate over each adjacent vertex pair of each facet:
-
     numFacets = size(facets, 1);
     numVerts = size(facets, 2);
 
     for f = 1 : numFacets
       for v1 = 1 : numVerts
-        v2 = rem(v1, numVerts) + 1;           % Successive edge pairs
-        p = [ facets(f,v1); facets(f,v2) ];   % Vertex indices
-        n = [ N2(p(1),:); N2(p(2),:) ];       % Node coordinates
-        range = [ TL(p(1)); TL(p(2)) ];       % Node radii
+        v2 = rem(v1, numVerts) + 1;             % Successive edge pairs
+        p = [ facets(f, v1); facets(f, v2) ];   % Vertex indices
+        n = [ N2(p(1), :); N2(p(2), :) ];       % Node coordinates
+        range = [ TL(p(1)); TL(p(2)) ];         % Node radii
 
         %%
         % Calculate the separation between two adjacent vertices:
-
-        edge = norm(n(1,:) - n(2,:));           % Euclidean distance
+        edge = norm(n(1, :) - n(2, :));         % Euclidean distance
 
         %%
         % Return attenated ranges between the source and target nodes:
         range = attenuate(n, range, edge);
 
-        %%
-        % Calculate the total coverage along their common edge:
-        coverage = range(1) + range(2);         % Sphere packing
+        if range(1) + range(2) - edge < edge * overlapFraction
 
-        overlap = coverage - edge;
-        minOverlap = edge * overlapFraction;
-
-        %% Defining the penalty for edge coverage gap
-        % _volume_(_i_) = _volume_(_i_) + _edge_ - _coverage_
-        % is insufficient because as the volume increases cubically,
-        % it easily offsets the linear increase in penalty.
-
-        if overlap < minOverlap
-
-          %%
+          %% Defining the penalty for edge coverage gap
           % Reset the score to zero as soon as
           % the first edge gap is found, and deem
-          % the current individual inferior.
-          volume(i) = 0;
+          % the current individual inferior:
+          volume(ind) = 0;
 
           % Escape inferior individual's loop _(1/3)_:
           inferior = true;
           break
-        else
-          penalty = volume(i) / NUM;
-
-          for j = 1 : NUM
-            if N2(j,3) < bounds(1) || N2(j,3) > bounds(2)
-              volume(i) = volume(i) - penalty;
-            end
-          end
         end
       end
 
@@ -123,6 +100,32 @@ function volume = chainlink(N, NUM, TL, bounds)
     % Escape inferior individual's loop _(3/3)_:
     if inferior == true
       continue
+    end
+
+    %% Defining the penalty for not contributing or breaking bounds
+    % Set the penalty to be _volume_(_i_) divided by
+    % only the number of nodes on the convex hull:
+    normals = cross(N2(facets(:, 1), :) - N2(facets(:, 2), :), ...
+                    N2(facets(:, 1), :) - N2(facets(:, 3), :), ...
+                    2);
+    normals = normals .* repmat(1 ./ sqrt(sum(normals .^ 2, 2)), 1, 3);
+    a = N2(facets(true(numFacets, 1), 1), :);
+    k = sum((repmat(mean(N2, 1), numFacets, 1) - a) .* normals, 2) < 0;
+    normals(k, :) = -normals(k, :);
+    penalty = volume(ind) ...
+              / (NUM ...
+                 - size(find(all(normals ...
+                                 * N2(1 : NUM, :)' ...
+                                 - repmat(sum(normals .* a, 2), 1, NUM) ...
+                                          >= -1e-13 * mean(abs(N2(:))), ...
+                                 1)'), 1));
+
+    %%
+    % Apply the penalty once for each node found breaking bounds:
+    for idx = 1 : NUM
+      if N2(idx, 3) < bounds(1) || N2(idx, 3) > bounds(2)
+        volume(ind) = volume(ind) - penalty;
+      end
     end
   end
 

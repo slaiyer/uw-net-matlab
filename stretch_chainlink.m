@@ -51,13 +51,12 @@ function [ N, V ] = stretch_chainlink(maxTL, verbose)
   NUM = numel(maxTL);   % Number of nodes
 
   if size(maxTL, 1) > 1
-    % Workaround for MATLAB's column-major matrix policy:
-    maxTL = reshape(maxTL.', 1, NUM);
+    maxTL = reshape(maxTL, NUM, 1);
   end
 
   if NUM > 0
-    for i = 1 : NUM
-      if maxTL(i) <= 0
+    for r = 1 : NUM
+      if maxTL(r) <= 0
         error(argError);
       end
     end
@@ -65,14 +64,14 @@ function [ N, V ] = stretch_chainlink(maxTL, verbose)
     error(argError);
   end
 
-  format compact;   % Eliminate unnecessay newlines
+  format compact;   % Eliminate unnecessary newlines
 
   %% Setting genetic algorithm options
   % min(maxTL) / sqrt(3) is a conservative setting, ensuring that
   % the cubic diagonal of the initial population range will fit
   % in the lowest coverage radius of all nodes.
   %%
-  % _'TolFun'_ set the stopiing criterios based on
+  % _'TolFun'_ set the stopping criterion based on
   % the average change of fitness function return value.
   %%
   % _'PopInitRange'_ sets the initial population seeding range,
@@ -98,17 +97,28 @@ function [ N, V ] = stretch_chainlink(maxTL, verbose)
     end
   end
 
-  bounds = [ 3000; 9000 ];
-  popInitRange = ones(2, 3 * NUM) * range / (2 * sqrt(3));
-  popInitRange(1,:) = -popInitRange(1,:);
-  popInitRange(:,2 * NUM + 1:3 * NUM) = popInitRange(:,2 * NUM + 1:3 * NUM) ...
-                                        + mean(bounds);
+  bounds = [ 0; Inf ];
+  % bounds = [ 3000; 9000 ];
+  halfRange = range / (2 * sqrt(3));
+  initRange = ones(2, 3 * NUM) * halfRange;
+  initRange(1, :) = -initRange(1, :);
+
+  if all(isfinite(bounds))
+    initRange(:, 2 * NUM + 1: 3 * NUM) = initRange(:, 2 * NUM + 1: 3 * NUM) ...
+                                         + mean(bounds);
+  elseif isfinite(bounds(1))
+    initRange(:, 2 * NUM + 1: 3 * NUM) = initRange(:, 2 * NUM + 1: 3 * NUM) ...
+                                         + bounds(1) + halfRange;
+  elseif isfinite(bounds(2))
+    initRange(:, 2 * NUM + 1: 3 * NUM) = initRange(:, 2 * NUM + 1: 3 * NUM) ...
+                                         + bounds(2) - halfRange;                                  
+  end
 
   oldopts = gaoptimset(@ga);                % Load default options
   newopts = ...
     struct( ...
-            'TolFun',       1e-4, ...                       % { 1e-6 }
-            'PopInitRange', popInitRange, ...
+            ... 'TolFun',       1e-4, ...                       % { 1e-6 }
+            'PopInitRange', initRange, ...
             'Generations',  100 * NUM, ...
             'Vectorized',   'on' ...                        % { 'off' }
           );
@@ -120,7 +130,16 @@ function [ N, V ] = stretch_chainlink(maxTL, verbose)
                    'Display', 'iter', ...  % { 'final' }
                    'PlotFcns', { @gaplotbestf, ...
                                  @gaplotbestindiv, ...
-                                 @gaplotstopping } ...
+                                 ... @gaplotdistance, ...
+                                 @gaplotscorediversity, ...
+                                 @gaplotselection, ...
+                                 @gaplotscores, ...
+                                 ... @gaplotexpectation, ...
+                                 ... @gaplotmaxconstr, ...
+                                 ... @gaplotrange, ...
+                                 @gaplotstopping ...
+                                 ... @gaplotgenealogy
+                                 } ...
                   );
   end
 
@@ -128,7 +147,9 @@ function [ N, V ] = stretch_chainlink(maxTL, verbose)
   % Maximize _CHAINLINK_ by minimizing the negative of its score:
   objFunc = @(N) -chainlink(N, NUM, maxTL, bounds);   % Create function handle for GA
 
-  poolchain = parpool([ 1, 200 ]);
+  if isempty(gcp('nocreate'))
+    parpool([ 1, Inf ]);
+  end
 
   if verbose == true
     tic  % Start timer
@@ -150,18 +171,18 @@ function [ N, V ] = stretch_chainlink(maxTL, verbose)
   if verbose == true
     sep = NaN(NUM);
 
-    for i = 1 : NUM - 1
-      for j = i + 1 : NUM
-        sep(i,j) = norm(N(i,:) - N(j,:));
+    for r = 1 : NUM - 1
+      for c = r + 1 : NUM
+        sep(r, c) = norm(N(r, :) - N(c, :));
       end
     end
 
     labels = cell(1, NUM);  % Row and column headers
     units = cell(1, NUM);   % Distance units
 
-    for i = 1 : NUM
-      labels{i} = strcat('Node', num2str(i));
-      units{i} = 'm';
+    for r = 1 : NUM
+      labels{r} = strcat('Node', num2str(r));
+      units{r} = 'm';
     end
 
     sep = array2table(sep(1 : NUM - 1, 2 : NUM).', ...
@@ -181,7 +202,6 @@ function [ N, V ] = stretch_chainlink(maxTL, verbose)
   V = node_config_vol(N, maxTL, verbose);
 
   format;   % Restore default output options
-  delete(poolchain);
 
 %%
 % Return a volume-optimized configuration for the given number of nodes:

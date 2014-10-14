@@ -75,8 +75,8 @@ function bestN = optim_node_config(inCSV, iters, verbose)
   end
 
   if NUM > 0
-    for i = 1 : NUM
-      if R(i) <= 0
+    for idx = 1 : NUM
+      if R(idx) <= 0
         error(argError);
       end
     end
@@ -97,12 +97,12 @@ function bestN = optim_node_config(inCSV, iters, verbose)
   N = zeros(NUM, 3, iters);   % 3D matrix for incoming node configurations
   V = zeros(iters, 1);        % Volumes of each incoming node configuration
 
-  for i = 1 : iters
+  for idx = 1 : iters
     if verbose == false
-      fprintf('Running GA iteration:\t%d/%d... ', i, iters);
+      fprintf('Running GA iteration:\t%d/%d... ', idx, iters);
     end
 
-    [ N(:,:,i), V(i) ] = stretch_chainlink(R, verbose);
+    [ N(:, :, idx), V(idx) ] = stretch_chainlink(R, verbose);
   end
 
   %% Sorting solutions based on optimality
@@ -110,7 +110,7 @@ function bestN = optim_node_config(inCSV, iters, verbose)
   % the polyhedral volume enclosed by each:
 
   [ V, rank ] = sort(V, 'descend');
-  N = N(:,:,rank);
+  N = N(:, :, rank);
 
   %%
   % Display sorted solutions if verbosity is required:
@@ -126,13 +126,13 @@ function bestN = optim_node_config(inCSV, iters, verbose)
       display(rank);  % Display iteration rankings
     end
   else
-    node_config_vol(N(:,:,1), R, verbose);  % Visualize best solution only
+    node_config_vol(N(:, :, 1), R, verbose);  % Visualize best solution only
   end
 
   %% Saving the output to files
   % Save the best node configuration to _inCSV_-optim_node_config.csv:
 
-  bestN = N(:,:,1);   % Save only the best node configuration
+  bestN = N(:, :, 1);   % Save only the best node configuration
   outN = [ inCSV, '-optim_node_config.csv' ];   % Append to filename
   csvwrite(outN, bestN);
 

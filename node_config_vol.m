@@ -52,8 +52,8 @@ function V = node_config_vol(N, maxTL, verbose)
   end
 
   if NUM > 0
-    for i = 1 : NUM
-      if maxTL(i) <= 0
+    for n1 = 1 : NUM
+      if maxTL(n1) <= 0
         error(argError);
       end
     end
@@ -76,26 +76,27 @@ function V = node_config_vol(N, maxTL, verbose)
     figure('Name', figTitle, 'NumberTitle', 'on');
 
     % Plot colours
-    red = [ 1 0.5 0.5 ];
-    orange = [ 1 0.95 0.8 ];
-    green = [ 0.5 1 0.5 ];
+    red = [ 1, 0.5, 0.5 ];
+    orange = [ 1, 0.95, 0.8 ];
+    green = [ 0.5, 1, 0.5 ];
 
     %%
     % 1. Display the polyhedral volume enclosed by _N_:
     subplot(1, 2, 1);
 
-    scatter3(N(:,1), N(:,2), N(:,3), '.');
+    scatter3(N(:, 1), N(:, 2), N(:, 3), '.');
     drawnow;
     hold on;  % Continue with current figure
 
     [ FBtri, FBpoints ] = freeBoundary(DT);
-    [ ~, ~, IB ] = intersect(N, FBpoints, 'rows');
-    Xbn = FBpoints(IB,:);
-    iIB(IB) = 1 : length(IB);
-    trisurf(iIB(FBtri), Xbn(:,1), Xbn(:,2), Xbn(:,3), ...
+    [ ~, ~, ib ] = intersect(N, FBpoints, 'rows');
+    XYZ = FBpoints(ib, :);
+    Tri(ib) = 1 : length(ib);
+    trisurf(Tri(FBtri), XYZ(:, 1), XYZ(:, 2), XYZ(:, 3), ...
             'EdgeColor', red, 'FaceColor', orange, 'FaceAlpha', 0.75);
     drawnow;
 
+    set(gca, 'ZDir', 'reverse');
     title('Node polyhedron');
     xlabel('X');
     ylabel('Y');
@@ -110,11 +111,11 @@ function V = node_config_vol(N, maxTL, verbose)
     %  the coverage volume of each node:
     subplot(1, 2, 2);
 
-    scatter3(N(:,1), N(:,2), N(:,3), '.');
+    scatter3(N(:, 1), N(:, 2), N(:, 3), '.');
     drawnow;
     hold on;  % Continue with current figure
 
-    trisurf(iIB(FBtri), Xbn(:,1), Xbn(:,2), Xbn(:,3), ...
+    trisurf(Tri(FBtri), XYZ(:, 1), XYZ(:, 2), XYZ(:, 3), ...
             'EdgeColor', red, 'FaceColor', orange);
     drawnow;
     hold on;
@@ -150,23 +151,23 @@ function V = node_config_vol(N, maxTL, verbose)
              ];
     cardinals = size(rubikV, 1);
     
-    for i = 1 : cardinals
-      rubikV(i,:) = edgeStep * rubikV(i,:) / norm(rubikV(i,:));
+    for dir = 1 : cardinals
+      rubikV(dir, :) = edgeStep * rubikV(dir, :) / norm(rubikV(dir, :));
     end
 
-    for i = 1 : NUM
+    for n1 = 1 : NUM
       % ptCloud1 = zeros(2 * NUM, 3);
       ptCloud2 = zeros(2 * NUM + cardinals, 3);
       range = 0;
-      point = N(i,:);
+      point = N(n1, :);
       absorption = 0;
 
-      for j = 1 : NUM
-        if j == i
+      for n2 = 1 : NUM
+        if n2 == n1
           continue
         end
 
-        edgeV = N(j,:) - N(i,:);
+        edgeV = N(n2, :) - N(n1, :);
         edgeStepV = edgeStep * edgeV / norm(edgeV);
 
         % Calculate node communication ranges:
@@ -176,8 +177,8 @@ function V = node_config_vol(N, maxTL, verbose)
         %   absorption = absorption ...
         %                + francois_garrison(25, 35, point(3), 8, 10) * edgeStep;
 
-        %   if maxTL(i) < 20 * log10(range) + absorption
-        %     ptCloud1(j,:) = point - edgeStepV;
+        %   if maxTL(n1) < 20 * log10(range) + absorption
+        %     ptCloud1(n2, :) = point - edgeStepV;
         %     break
         %   end
         % end
@@ -185,7 +186,7 @@ function V = node_config_vol(N, maxTL, verbose)
         % % Calculate attenuation in opposite direction:
         % edgeStepV = -edgeStepV;
         % range = 0;
-        % point = N(i,:);
+        % point = N(n1, :);
         % absorption = 0;
 
         % while true
@@ -194,15 +195,15 @@ function V = node_config_vol(N, maxTL, verbose)
         %   absorption = absorption ...
         %                + francois_garrison(25, 35, point(3), 8, 10) * edgeStep;
 
-        %   if maxTL(i) < 20 * log10(range) + absorption
-        %     ptCloud1(j + NUM,:) = point - edgeStepV;
+        %   if maxTL(n1) < 20 * log10(range) + absorption
+        %     ptCloud1(n2 + NUM, :) = point - edgeStepV;
         %     break
         %   end
         % end
 
         % edgeStepV = -edgeStepV;
         % range = 0;
-        % point = N(i,:);
+        % point = N(n1, :);
         % absorption = 0;
 
         % Calculate echo-based detection ranges:
@@ -212,8 +213,8 @@ function V = node_config_vol(N, maxTL, verbose)
           absorption = absorption ...
                        + francois_garrison(25, 35, point(3), 8, 10) * edgeStep;
 
-          if maxTL(i) < 2 * (20 * log10(range) + absorption)
-            ptCloud2(j,:) = point - edgeStepV;
+          if maxTL(n1) < 2 * (20 * log10(range) + absorption)
+            ptCloud2(n2, :) = point - edgeStepV;
             break
           end
         end
@@ -221,7 +222,7 @@ function V = node_config_vol(N, maxTL, verbose)
         % Calculate attenuation in opposite direction:
         edgeStepV = -edgeStepV;
         range = 0;
-        point = N(i,:);
+        point = N(n1, :);
         absorption = 0;
 
         while true
@@ -230,18 +231,18 @@ function V = node_config_vol(N, maxTL, verbose)
           absorption = absorption ...
                        + francois_garrison(25, 35, point(3), 8, 10) * edgeStep;
 
-          if maxTL(i) < 2 * (20 * log10(range) + absorption)
-            ptCloud2(j + NUM,:) = point - edgeStepV;
+          if maxTL(n1) < 2 * (20 * log10(range) + absorption)
+            ptCloud2(n2 + NUM, :) = point - edgeStepV;
             break
           end
         end
       end
       
-      for j = 1 : cardinals
+      for dir = 1 : cardinals
         range = 0;
-        point = N(i,:);
+        point = N(n1, :);
         absorption = 0;
-        edgeStepV = rubikV(j,:);
+        edgeStepV = rubikV(dir, :);
         
         while true
           range = range + edgeStep;
@@ -249,8 +250,8 @@ function V = node_config_vol(N, maxTL, verbose)
           absorption = absorption ...
                        + francois_garrison(25, 35, point(3), 8, 10) * edgeStep;
 
-          if maxTL(i) < 2 * (20 * log10(range) + absorption)
-            ptCloud2(2 * NUM + j,:) = point - edgeStepV;
+          if maxTL(n1) < 2 * (20 * log10(range) + absorption)
+            ptCloud2(2 * NUM + dir, :) = point - edgeStepV;
             break
           end
         end
@@ -258,32 +259,33 @@ function V = node_config_vol(N, maxTL, verbose)
 
       % Display node communication ranges:
       % Remove reflexive mappings:
-      % ptCloud1(i + NUM,:) = [];
-      % ptCloud1(i,:) = [];
+      % ptCloud1(n1 + NUM, :) = [];
+      % ptCloud1(n1, :) = [];
 
       % [ FBtri, FBpoints ] = freeBoundary(delaunayTriangulation(ptCloud1));
       % [ ~, ~, IB ] = intersect(ptCloud1, FBpoints, 'rows');
-      % Xbn = FBpoints(IB,:);
-      % iIB(IB) = 1 : length(IB);
-      % trisurf(iIB(FBtri), Xbn(:,1), Xbn(:,2), Xbn(:,3), ...
+      % Xbn = FBpoints(IB, :);
+      % Tri(IB) = 1 : length(IB);
+      % trisurf(Tri(FBtri), Xbn(:, 1), Xbn(:, 2), Xbn(:, 3), ...
       %         'EdgeAlpha', 0, 'FaceAlpha', 0.01, 'FaceColor', red);
 
       % Display echo-based detection ranges:
       % Remove reflexive mappings:
-      ptCloud2(i + NUM,:) = [];
-      ptCloud2(i,:) = [];
+      ptCloud2(n1 + NUM, :) = [];
+      ptCloud2(n1, :) = [];
 
       [ FBtri, FBpoints ] = freeBoundary(delaunayTriangulation(ptCloud2));
-      [ ~, ~, IB ] = intersect(ptCloud2, FBpoints, 'rows');
-      Xbn = FBpoints(IB,:);
-      iIB(IB) = 1 : length(IB);
-      trisurf(iIB(FBtri), Xbn(:,1), Xbn(:,2), Xbn(:,3), ...
+      [ ~, ~, ib ] = intersect(ptCloud2, FBpoints, 'rows');
+      XYZ = FBpoints(ib, :);
+      Tri(ib) = 1 : length(ib);
+      trisurf(Tri(FBtri), XYZ(:, 1), XYZ(:, 2), XYZ(:, 3), ...
               'EdgeAlpha', 0, 'FaceAlpha', 0.1, 'FaceColor', green);
 
       drawnow;
       hold on;
     end
 
+    set(gca, 'ZDir', 'reverse');
     title('Node coverages');
     xlabel('X');
     ylabel('Y');

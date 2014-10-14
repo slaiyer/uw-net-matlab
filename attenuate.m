@@ -30,15 +30,15 @@ function range = attenuate(N, maxTL, edge)
   % numPoints = ceil(edge);       % Space intermediate points ~1m apart
   numPaths = 2;     % 1 for node communication, 2 for echo-based detection
   edgeStep = edge / numPoints;  % Step increment size
-  z = linspace(N(1,3), N(2,3), numPoints + 1);  % Intermediate points
+  z = linspace(N(1, 3), N(2, 3), numPoints + 1);  % Intermediate points
   range = zeros(size(maxTL));
   absorption = 0;
 
   % Start from first node:
-  for i = 1 : numPoints + 1
+  for pt = 1 : numPoints + 1
     range(1) = range(1) + edgeStep;     % Increment old range
     absorption = absorption ...
-                 + francois_garrison(25, 35, z(i), 8, 10) * edgeStep;
+                 + francois_garrison(25, 35, z(pt), 8, 10) * edgeStep;
 
     % Test new range against given maximum acceptable losses:
     if maxTL(1) < numPaths * (20 * log10(range(1)) + absorption) ...
@@ -51,7 +51,7 @@ function range = attenuate(N, maxTL, edge)
   absorption = 0;
 
   % Start from other node:
-  for j = numPoints + 1 : -1 : 1
+  for pt = numPoints + 1 : -1 : 1
     % Short-circuit if ultimate goal (complete edge coverage) is satisfied
     % Skip entire conditional block if overlapping is required
     % if j <= numPoints && range(1) + range(2) > edge
@@ -61,7 +61,7 @@ function range = attenuate(N, maxTL, edge)
 
     range(2) = range(2) + edgeStep;     % Increment old range
     absorption = absorption ...
-                 + francois_garrison(25, 35, z(j), 8, 10) * edgeStep;
+                 + francois_garrison(25, 35, z(pt), 8, 10) * edgeStep;
 
     % Test new range against given maximum acceptable losses:
     if maxTL(2) < numPaths * (20 * log10(range(2)) + absorption) ...
