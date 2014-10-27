@@ -1,4 +1,4 @@
-res = 100;
+res = 1000;
 
 xgv = -2e4 : res : 2e4;
 ygv = -2e4 : res : 2e4;
@@ -22,7 +22,7 @@ absrpCoeff = repmat(column, xSize, ySize, 1);
 
 toc
 
-% save([ 'grid', num2str(res) ], 'res', 'xgv', 'ygv', 'zgv', 'absrpCoeff');
+save([ 'grid', num2str(res) ], 'res', 'xgv', 'ygv', 'zgv', 'absrpCoeff');
 toc
 FG = griddedInterpolant({ xgv, ygv, zgv }, absrpCoeff, 'spline', 'spline');
 toc

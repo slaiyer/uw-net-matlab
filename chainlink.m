@@ -70,11 +70,9 @@ function volume = chainlink(N, NUM, TL, bounds, FG)
         % Calculate the separation between two adjacent vertices:
         edge = norm(n(1, :) - n(2, :));         % Euclidean distance
 
-%         display('5');
         %%
         % Return attenated ranges between the source and target nodes:
         range = attenuate(n, range, edge, FG);
-%         display('9');
 
         if range(1) + range(2) - edge < edge * overlapFraction
 

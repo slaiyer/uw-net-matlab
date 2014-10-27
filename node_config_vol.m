@@ -261,7 +261,10 @@ function V = node_config_vol(N, maxTL, verbose)
       % Remove reflexive mappings:
       % ptCloud1(n1 + NUM, :) = [];
       % ptCloud1(n1, :) = [];
-
+      % tmp = ptCloud(:, 3);
+      % tmp(tmp < 0) = 0;
+      % ptCloud(:, 3) = tmp;
+      % 
       % [ FBtri, FBpoints ] = freeBoundary(delaunayTriangulation(ptCloud1));
       % [ ~, ~, IB ] = intersect(ptCloud1, FBpoints, 'rows');
       % Xbn = FBpoints(IB, :);
@@ -273,6 +276,9 @@ function V = node_config_vol(N, maxTL, verbose)
       % Remove reflexive mappings:
       ptCloud2(n1 + NUM, :) = [];
       ptCloud2(n1, :) = [];
+      tmp = ptCloud2(:, 3);
+      tmp(tmp < 0) = 0;
+      ptCloud2(:, 3) = tmp;
 
       [ FBtri, FBpoints ] = freeBoundary(delaunayTriangulation(ptCloud2));
       [ ~, ~, ib ] = intersect(ptCloud2, FBpoints, 'rows');

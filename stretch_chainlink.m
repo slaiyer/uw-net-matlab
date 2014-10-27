@@ -144,14 +144,10 @@ function [ N, V ] = stretch_chainlink(maxTL, verbose)
                   );
   end
 
-  display('1');
-  res = 100;
-  display('2');
+  res = 1000;
   gridData = load([ 'grid', num2str(res) ]);
-  display('3');
   FG = griddedInterpolant({ gridData.xgv, gridData.ygv, gridData.zgv }, ...
-                          gridData.absrpCoeff, 'cubic', 'cubic');
-  display('4');
+                          gridData.absrpCoeff, 'spline', 'spline');
 
   %% Invoking the genetic algorithm
   % Maximize _CHAINLINK_ by minimizing the negative of its score:
