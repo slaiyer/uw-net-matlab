@@ -10,7 +10,7 @@
 % Copyright 2014 Sidharth Iyer (246964@gmail.com)
 
 %% Function signature
-function volume = chainlink(N, NUM, TL, bounds)
+function volume = chainlink(N, NUM, TL, bounds, FG)
 
 %% Input
 % _N_(_INDIVS_, 3 * _NUM_): Vectorized array of individuals such that
@@ -59,12 +59,9 @@ function volume = chainlink(N, NUM, TL, bounds)
     % at least the specified extent.
     %%
     % Enumerate and iterate over each adjacent vertex pair of each facet:
-    numFacets = size(facets, 1);
-    numVerts = size(facets, 2);
-
-    for f = 1 : numFacets
-      for v1 = 1 : numVerts
-        v2 = rem(v1, numVerts) + 1;             % Successive edge pairs
+    for f = 1 : size(facets, 1)
+      for v1 = 1 : 3
+        v2 = rem(v1, 3) + 1;                    % Successive edge pairs
         p = [ facets(f, v1); facets(f, v2) ];   % Vertex indices
         n = [ N2(p(1), :); N2(p(2), :) ];       % Node coordinates
         range = [ TL(p(1)); TL(p(2)) ];         % Node radii
@@ -73,9 +70,11 @@ function volume = chainlink(N, NUM, TL, bounds)
         % Calculate the separation between two adjacent vertices:
         edge = norm(n(1, :) - n(2, :));         % Euclidean distance
 
+%         display('5');
         %%
         % Return attenated ranges between the source and target nodes:
-        range = attenuate(n, range, edge);
+        range = attenuate(n, range, edge, FG);
+%         display('9');
 
         if range(1) + range(2) - edge < edge * overlapFraction
 
@@ -103,27 +102,24 @@ function volume = chainlink(N, NUM, TL, bounds)
     end
 
     %% Defining the penalty for not contributing or breaking bounds
-    % Set the penalty to be _volume_(_i_) divided by
-    % only the number of nodes on the convex hull:
-    normals = cross(N2(facets(:, 1), :) - N2(facets(:, 2), :), ...
-                    N2(facets(:, 1), :) - N2(facets(:, 3), :), 2);
-    normals = bsxfun(@times, normals, 1 ./ sqrt(sum(normals .^ 2, 2)));
-    a = N2(facets(true(numFacets, 1), 1), :);
-    k = sum(bsxfun(@minus, mean(N2, 1), a) .* normals, 2) < 0;
-    normals(k, :) = -normals(k, :);
-    penalty = volume(ind) ...
-              / (NUM - size(find(all(bsxfun(@minus, ...
-                                            normals * N2', ...
-                                            sum(normals .* a, 2)) ...
-                                     >= -1e-13 * mean(abs(N2(:))), 1)), 2));
+    % Find nodes not contributing to the score and
+    % set the penalty to be _volume_(_i_) divided by the number of nodes:
+    violations = 0;
+    penalty = 5 * volume(ind) / NUM;  % TODO: Eliminate magic number multiplier
 
     %%
     % Apply the penalty once for each node found breaking bounds:
     for idx = 1 : NUM
+      if ~ismember(idx, facets)
+        violations = violations + 1/3;
+      end
+
       if N2(idx, 3) < bounds(1) || N2(idx, 3) > bounds(2)
-        volume(ind) = volume(ind) - penalty;
+        violations = violations + 2/3;
       end
     end
+
+    volume(ind) = volume(ind) - violations * penalty;
   end
 
 %%
